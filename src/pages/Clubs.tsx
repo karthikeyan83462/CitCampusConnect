@@ -6,10 +6,12 @@ import ClubCard from '../components/Clubs/ClubCard';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
+import CreateClub from '../components/CreateClub/CreateClub';
 
 export type ClubRole = 'club_head' | 'secretary' | 'treasurer' | 'event_manager' | 'member';
 export const isValidClubRole = (role: string): role is ClubRole =>
   ['club_head', 'secretary', 'treasurer', 'event_manager', 'member'].includes(role);
+
 const Clubs: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Clubs: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [showCreateClubModal, setShowCreateClubModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchClubs());
@@ -72,9 +75,6 @@ const Clubs: React.FC = () => {
     };
   };
 
-
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -83,24 +83,44 @@ const Clubs: React.FC = () => {
     );
   }
 
-  console.log('filteredClubs:', filteredClubs);
-
-
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Student Clubs</h1>
           <p className="text-gray-600 mt-2">Discover and join amazing student organizations</p>
         </div>
+
         {user?.role === 'club_head' && (
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2">
-            <Plus className="w-5 h-5" />
-            <span>Create Club</span>
+          <button
+            onClick={() => setShowCreateClubModal(true)}
+            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Club
           </button>
         )}
       </div>
 
+      {/* Modal for Create Club */}
+      {user?.role === 'club_head' && showCreateClubModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl">
+            <button
+              onClick={() => setShowCreateClubModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✕
+            </button>
+            <div className="p-6">
+              <CreateClub onSuccess={() => setShowCreateClubModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search & Filter */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
@@ -130,6 +150,7 @@ const Clubs: React.FC = () => {
         </div>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-lg p-6 text-center">
           <div className="text-3xl font-bold text-blue-600 mb-2">{clubs.length}</div>
@@ -147,11 +168,10 @@ const Clubs: React.FC = () => {
         </div>
       </div>
 
+      {/* Club Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClubs.map(club => {
           const { userRole, status } = getMembershipDetails(club.id);
-          console.log("userClubMemberships:", userClubMemberships);
-          console.log("Membership for club:", club.id, getMembershipDetails(club.id));
 
           return (
             <ClubCard
@@ -169,6 +189,7 @@ const Clubs: React.FC = () => {
         })}
       </div>
 
+      {/* Empty State */}
       {filteredClubs.length === 0 && (
         <div className="text-center py-12">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
