@@ -75,7 +75,7 @@ const clubSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchClubs.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(fetchClubs.fulfilled, (state, action: PayloadAction<Club[]>) => {
         state.loading = false;

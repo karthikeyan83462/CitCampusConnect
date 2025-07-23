@@ -58,7 +58,7 @@ const hostelSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchComplaints.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(fetchComplaints.fulfilled, (state, action: PayloadAction<HostelComplaint[]>) => {
         state.loading = false;

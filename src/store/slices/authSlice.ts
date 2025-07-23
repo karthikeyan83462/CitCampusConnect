@@ -12,7 +12,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  loading: true,
+  loading: false,
   error: null,
 };
 
@@ -108,7 +108,7 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(signIn.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
         state.error = null;
       })
       .addCase(signIn.fulfilled, (state, action: PayloadAction<Profile>) => {
@@ -120,7 +120,7 @@ const authSlice = createSlice({
         state.error = action.error.message || 'Sign in failed';
       })
       .addCase(signUp.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
         state.error = null;
       })
       .addCase(signUp.fulfilled, (state, action: PayloadAction<Profile>) => {
@@ -136,7 +136,7 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(getCurrentUser.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(getCurrentUser.fulfilled, (state, action: PayloadAction<Profile>) => {
         state.loading = false;

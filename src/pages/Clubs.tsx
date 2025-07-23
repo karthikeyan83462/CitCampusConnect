@@ -37,7 +37,7 @@ const Clubs: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  if (loading) {
+  if (false) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

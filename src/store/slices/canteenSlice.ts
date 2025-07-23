@@ -77,7 +77,7 @@ const canteenSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchItems.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(fetchItems.fulfilled, (state, action: PayloadAction<CanteenItem[]>) => {
         state.loading = false;
