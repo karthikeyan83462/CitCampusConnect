@@ -58,11 +58,13 @@ const hostelSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchComplaints.pending, (state) => {
-        state.loading = false;
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchComplaints.fulfilled, (state, action: PayloadAction<HostelComplaint[]>) => {
         state.loading = false;
         state.complaints = action.payload;
+        state.error = null;
       })
       .addCase(fetchComplaints.rejected, (state, action) => {
         state.loading = false;

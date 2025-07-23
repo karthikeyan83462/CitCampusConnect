@@ -3,14 +3,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Search, Filter, Plus, Heart } from 'lucide-react';
 import { fetchItems, addToWishlist, removeFromWishlist } from '../store/slices/marketplaceSlice';
 import ProductCard from '../components/Marketplace/ProductCard';
+import SellItemModal from '../components/Marketplace/SellItemModal';
 import type { RootState, AppDispatch } from '../store/store';
 
 const Marketplace: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { items, wishlist, loading } = useSelector((state: RootState) => state.marketplace);
+  const { user } = useSelector((state: RootState) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchItems());
@@ -49,11 +52,16 @@ const Marketplace: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Student Marketplace</h1>
           <p className="text-gray-600 mt-2">Buy and sell items with your fellow students</p>
         </div>
-        
-        <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all flex items-center space-x-2">
-          <Plus className="w-5 h-5" />
-          <span>Sell Item</span>
-        </button>
+        {user && (
+          <button
+            onClick={() => setIsSellModalOpen(true)}
+            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Sell Item</span>
+          </button>
+        )}
+
       </div>
 
       {/* Filters */}
@@ -140,6 +148,15 @@ const Marketplace: React.FC = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">No items found</h3>
           <p className="text-gray-600">Try adjusting your search or filter criteria</p>
         </div>
+      )}
+
+      {/* Sell Item Modal */}
+      {user && (
+        <SellItemModal
+          isOpen={isSellModalOpen}
+          onClose={() => setIsSellModalOpen(false)}
+          userId={user.id}
+        />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, Users } from 'lucide-react';
 import { fetchClubs, joinClub } from '../store/slices/clubSlice';
 import ClubCard from '../components/Clubs/ClubCard';
 import toast from 'react-hot-toast';
@@ -37,7 +37,7 @@ const Clubs: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  if (false) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

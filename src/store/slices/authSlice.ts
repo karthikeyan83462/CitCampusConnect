@@ -12,9 +12,28 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true, // Changed to true by default
   error: null,
 };
+
+export const checkSession = createAsyncThunk(
+  'auth/checkSession',
+  async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No session found');
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+    
+    return profile;
+  }
+);
 
 export const signIn = createAsyncThunk(
   'auth/signIn',
@@ -107,8 +126,20 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(signIn.pending, (state) => {
+      .addCase(checkSession.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkSession.fulfilled, (state, action: PayloadAction<Profile>) => {
         state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(checkSession.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+      })
+      .addCase(signIn.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(signIn.fulfilled, (state, action: PayloadAction<Profile>) => {

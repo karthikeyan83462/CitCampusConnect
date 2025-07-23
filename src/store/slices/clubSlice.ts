@@ -75,11 +75,13 @@ const clubSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchClubs.pending, (state) => {
-        state.loading = false;
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchClubs.fulfilled, (state, action: PayloadAction<Club[]>) => {
         state.loading = false;
         state.clubs = action.payload;
+        state.error = null;
       })
       .addCase(fetchClubs.rejected, (state, action) => {
         state.loading = false;

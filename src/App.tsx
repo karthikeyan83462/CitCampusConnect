@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';
-import { store } from './store/store';
+import { Provider, useSelector, useDispatch } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, AppDispatch } from './store/store';
+import { persistStore } from 'redux-persist';
+import { checkSession } from './store/slices/authSlice';
 import Layout from './components/Layout/Layout';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
@@ -43,6 +46,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const AppContent: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(checkSession());
+  }, [dispatch]);
 
   return (
     <Router>
@@ -61,10 +69,14 @@ const AppContent: React.FC = () => {
   );
 };
 
+const persistor = persistStore(store);
+
 function App() {
   return (
     <Provider store={store}>
-      <AppContent />
+      <PersistGate loading={null} persistor={persistor}>
+        <AppContent />
+      </PersistGate>
     </Provider>
   );
 }
