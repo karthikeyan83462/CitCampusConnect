@@ -10,25 +10,24 @@ import type { AppDispatch, RootState } from '../../store/store';
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, user } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(getCurrentUser());
   }, [dispatch]);
 
   useEffect(() => {
-    // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (loading) {
         console.log('Auth check taking too long, redirecting to auth page');
         window.location.href = '/auth';
       }
-    }, 10000); // 10 second timeout
+    }, 10000);
 
     return () => clearTimeout(timeout);
   }, [loading]);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
   if (loading) {
     return (
@@ -44,14 +43,14 @@ const Layout: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <Navbar isSidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} />
-      
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+
       <div className="p-4 lg:ml-64 pt-20">
         <main className="min-h-screen">
           <Outlet />
         </main>
       </div>
-      
+
       <Toaster 
         position="top-right"
         toastOptions={{

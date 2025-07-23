@@ -1,11 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authSlice from './slices/authSlice';
 import clubSlice from './slices/clubSlice';
 import hostelSlice from './slices/hostelSlice';
 import canteenSlice from './slices/canteenSlice';
 import marketplaceSlice from './slices/marketplaceSlice';
+import settingsSlice from './slices/settingsSlice';
 
 const persistConfig = {
   key: 'root',
@@ -22,6 +23,7 @@ export const store = configureStore({
     hostel: hostelSlice,
     canteen: canteenSlice,
     marketplace: marketplaceSlice,
+    settings: settingsSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

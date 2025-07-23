@@ -12,7 +12,12 @@ import Clubs from './pages/Clubs';
 import Hostel from './pages/Hostel';
 import Canteen from './pages/Canteen';
 import Marketplace from './pages/Marketplace';
+import Settings from './pages/Settings';
+import ClubManagement from './pages/ClubManagement';
+import ViewClub from './pages/ViewClub';
 import type { RootState } from './store/store';
+
+
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useSelector((state: RootState) => state.auth);
@@ -63,6 +68,9 @@ const AppContent: React.FC = () => {
           <Route path="hostel" element={<Hostel />} />
           <Route path="canteen" element={<Canteen />} />
           <Route path="marketplace" element={<Marketplace />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="club-management" element={<ClubManagement />} />
+          <Route path="/club/:clubId" element={<ViewClub />} />
         </Route>
       </Routes>
     </Router>

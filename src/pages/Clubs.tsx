@@ -1,25 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, Filter, Plus, Users } from 'lucide-react';
-import { fetchClubs, joinClub } from '../store/slices/clubSlice';
+import { fetchClubs, joinClub, fetchUserClubMemberships } from '../store/slices/clubSlice';
 import ClubCard from '../components/Clubs/ClubCard';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
+import CreateClub from '../components/CreateClub/CreateClub';
+
+export type ClubRole = 'club_head' | 'secretary' | 'treasurer' | 'event_manager' | 'member';
+export const isValidClubRole = (role: string): role is ClubRole =>
+  ['club_head', 'secretary', 'treasurer', 'event_manager', 'member'].includes(role);
 
 const Clubs: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { clubs, loading } = useSelector((state: RootState) => state.clubs);
+  const navigate = useNavigate();
+  const { clubs, loading, userClubMemberships } = useSelector((state: RootState) => state.clubs);
   const { user } = useSelector((state: RootState) => state.auth);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [showCreateClubModal, setShowCreateClubModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchClubs());
-  }, [dispatch]);
+    if (user?.id) dispatch(fetchUserClubMemberships(user.id));
+  }, [dispatch, user?.id]);
 
   const handleJoinClub = async (clubId: string) => {
-    if (!user) return;
-    
+    if (!user || !user.id) return;
     try {
       await dispatch(joinClub({ clubId, userId: user.id })).unwrap();
       toast.success('Join request submitted successfully!');
@@ -28,14 +37,43 @@ const Clubs: React.FC = () => {
     }
   };
 
+  const handleManageClub = (clubId: string, clubName: string) => {
+    navigate(`/club-management?clubId=${clubId}&clubName=${encodeURIComponent(clubName)}`);
+  };
+
+  const handleViewClub = (clubId: string, clubName: string) => {
+    navigate(`/club/${clubId}?name=${encodeURIComponent(clubName)}`);
+  };
+
   const categories = ['Academic', 'Sports', 'Cultural', 'Technical', 'Social Service', 'Arts'];
 
   const filteredClubs = clubs.filter(club => {
-    const matchesSearch = club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         club.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      club.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || club.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const getMembershipDetails = (clubId: string) => {
+    const membership = userClubMemberships?.find(m => m.club_id === clubId);
+    const isApproved = membership?.status === 'approved';
+
+    let userRole: ClubRole | undefined;
+
+    if (user?.role === 'club_head') {
+      userRole = user?.role;
+    } else if (membership?.position) {
+      const normalized = membership.position.toLowerCase().replace(/\s+/g, '_');
+      userRole = isValidClubRole(normalized) ? (normalized as ClubRole) : undefined;
+    }
+
+    return {
+      isApproved,
+      userRole,
+      status: membership?.status
+    };
+  };
 
   if (loading) {
     return (
@@ -53,16 +91,36 @@ const Clubs: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Student Clubs</h1>
           <p className="text-gray-600 mt-2">Discover and join amazing student organizations</p>
         </div>
-        
+
         {user?.role === 'club_head' && (
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2">
-            <Plus className="w-5 h-5" />
-            <span>Create Club</span>
+          <button
+            onClick={() => setShowCreateClubModal(true)}
+            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Club
           </button>
         )}
       </div>
 
-      {/* Filters */}
+      {/* Modal for Create Club */}
+      {user?.role === 'club_head' && showCreateClubModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl">
+            <button
+              onClick={() => setShowCreateClubModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✕
+            </button>
+            <div className="p-6">
+              <CreateClub onSuccess={() => setShowCreateClubModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search & Filter */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
@@ -75,7 +133,7 @@ const Clubs: React.FC = () => {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
+
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <select
@@ -104,24 +162,34 @@ const Clubs: React.FC = () => {
         </div>
         <div className="bg-white rounded-xl shadow-lg p-6 text-center">
           <div className="text-3xl font-bold text-purple-600 mb-2">
-            {clubs.reduce((sum, club) => sum + club.member_count, 0)}
+            {clubs.reduce((sum, club) => sum + (club.member_count || 0), 0)}
           </div>
           <div className="text-gray-600">Total Members</div>
         </div>
       </div>
 
-      {/* Clubs Grid */}
+      {/* Club Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClubs.map(club => (
-          <ClubCard
-            key={club.id}
-            club={club}
-            onJoin={handleJoinClub}
-            userRole={user?.role}
-          />
-        ))}
+        {filteredClubs.map(club => {
+          const { userRole, status } = getMembershipDetails(club.id);
+
+          return (
+            <ClubCard
+              key={club.id}
+              club={club}
+              onJoin={handleJoinClub}
+              onManage={() => handleManageClub(club.id, club.name)}
+              onView={() => handleViewClub(club.id, club.name)}
+              userRole={userRole}
+              membershipStatus={status}
+              isMember={!!status}
+              userId={user?.id}
+            />
+          );
+        })}
       </div>
 
+      {/* Empty State */}
       {filteredClubs.length === 0 && (
         <div className="text-center py-12">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
