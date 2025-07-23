@@ -7,10 +7,9 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
 
-type ClubRole = 'club_head' | 'member' | 'secretary' | 'treasurer' | 'event_manager';
-const validRoles: ClubRole[] = ['club_head', 'member', 'secretary', 'treasurer', 'event_manager'];
-const isValidClubRole = (role: string): role is ClubRole => validRoles.includes(role as ClubRole);
-
+export type ClubRole = 'club_head' | 'secretary' | 'treasurer' | 'event_manager' | 'member';
+export const isValidClubRole = (role: string): role is ClubRole =>
+  ['club_head', 'secretary', 'treasurer', 'event_manager', 'member'].includes(role);
 const Clubs: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -56,9 +55,25 @@ const Clubs: React.FC = () => {
   const getMembershipDetails = (clubId: string) => {
     const membership = userClubMemberships?.find(m => m.club_id === clubId);
     const isApproved = membership?.status === 'approved';
-    const userRole = isValidClubRole(membership?.position || '') ? (membership?.position as ClubRole) : undefined;
-    return { isApproved, userRole, status: membership?.status };
+
+    let userRole: ClubRole | undefined;
+
+    if (user?.role === 'club_head') {
+      userRole = user?.role;
+    } else if (membership?.position) {
+      const normalized = membership.position.toLowerCase().replace(/\s+/g, '_');
+      userRole = isValidClubRole(normalized) ? (normalized as ClubRole) : undefined;
+    }
+
+    return {
+      isApproved,
+      userRole,
+      status: membership?.status
+    };
   };
+
+
+
 
   if (loading) {
     return (
@@ -67,6 +82,9 @@ const Clubs: React.FC = () => {
       </div>
     );
   }
+
+  console.log('filteredClubs:', filteredClubs);
+
 
   return (
     <div className="space-y-8">
@@ -131,7 +149,9 @@ const Clubs: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClubs.map(club => {
-          const { isApproved, userRole, status } = getMembershipDetails(club.id);
+          const { userRole, status } = getMembershipDetails(club.id);
+          console.log("userClubMemberships:", userClubMemberships);
+          console.log("Membership for club:", club.id, getMembershipDetails(club.id));
 
           return (
             <ClubCard

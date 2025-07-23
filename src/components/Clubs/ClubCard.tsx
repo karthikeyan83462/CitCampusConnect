@@ -21,7 +21,6 @@ const ClubCard: React.FC<ClubCardProps> = ({
   onManage,
   onView,
   userRole,
-  userId,
   isMember,
   membershipStatus,
 }) => {
@@ -32,10 +31,11 @@ const ClubCard: React.FC<ClubCardProps> = ({
     onJoin?.(club.id);
   };
 
-  const renderButtons = () => {
-    const canManage =
-      (userRole === 'club_head' && userId === club.club_head_id) || userRole === 'secretary';
+  const canManage =
+    (userRole === 'club_head') || userRole === 'secretary';
 
+  const renderButtons = () => {
+    // Manage + View buttons for club head or secretary
     if (canManage) {
       return (
         <div className="flex gap-2">
@@ -57,6 +57,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
       );
     }
 
+    // Approved members get View button
     if (isMember && membershipStatus === 'approved') {
       return (
         <button
@@ -69,6 +70,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
       );
     }
 
+    // Pending state or join already clicked
     if ((isMember && membershipStatus === 'pending') || joinClicked) {
       return (
         <div className="flex gap-2">
@@ -87,6 +89,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
       );
     }
 
+    // Default (non-members): Join + View
     return (
       <div className="flex gap-2">
         <button
