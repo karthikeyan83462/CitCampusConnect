@@ -14,7 +14,9 @@ import Canteen from './pages/Canteen';
 import Marketplace from './pages/Marketplace';
 import Settings from './pages/Settings';
 import ClubManagement from './pages/ClubManagement';
+import ViewClub from './pages/ViewClub';
 import type { RootState } from './store/store';
+
 
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -68,6 +70,7 @@ const AppContent: React.FC = () => {
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="settings" element={<Settings />} />
           <Route path="club-management" element={<ClubManagement />} />
+          <Route path="/club/:clubId" element={<ViewClub />} />
         </Route>
       </Routes>
     </Router>

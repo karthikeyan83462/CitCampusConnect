@@ -1,64 +1,108 @@
-import React from 'react';
-import { Users, Crown, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Crown, Clock, Eye } from 'lucide-react';
 import type { Database } from '../../lib/supabase';
 
 type Club = Database['public']['Tables']['clubs']['Row'];
 
 interface ClubCardProps {
   club: Club;
-  onJoin?: (clubId: string) => void;
-  onManage?: (clubId: string) => void;
-  userRole?: string;
+  onJoin: (clubId: string) => void;
+  onManage: (clubId: string) => void;
+  onView: (clubId: string) => void;
+  userRole?: 'club_head' | 'secretary' | 'treasurer' | 'event_manager' | 'member';
+  membershipStatus?: 'pending' | 'approved' | 'rejected';
   userId?: string;
   isMember?: boolean;
-  membershipStatus?: 'pending' | 'approved' | 'rejected';
 }
 
-const ClubCard: React.FC<ClubCardProps> = ({ 
-  club, 
-  onJoin, 
-  onManage, 
-  userRole, 
+const ClubCard: React.FC<ClubCardProps> = ({
+  club,
+  onJoin,
+  onManage,
+  onView,
+  userRole,
   userId,
   isMember,
-  membershipStatus 
+  membershipStatus,
 }) => {
-  const getButtonContent = () => {
-    if (isMember) {
-      if (membershipStatus === 'pending') {
-        return (
+  const [joinClicked, setJoinClicked] = useState(false);
+
+  const handleJoin = () => {
+    setJoinClicked(true);
+    onJoin?.(club.id);
+  };
+
+  const renderButtons = () => {
+    const canManage =
+      (userRole === 'club_head' && userId === club.club_head_id) || userRole === 'secretary';
+
+    if (canManage) {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={() => onManage?.(club.id)}
+            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all"
+          >
+            <Crown className="w-4 h-4 inline mr-2" />
+            Manage Club
+          </button>
+          <button
+            onClick={() => onView?.(club.id)}
+            className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
+          >
+            <Eye className="w-4 h-4 inline mr-2" />
+            View Club
+          </button>
+        </div>
+      );
+    }
+
+    if (isMember && membershipStatus === 'approved') {
+      return (
+        <button
+          onClick={() => onView?.(club.id)}
+          className="w-full bg-green-100 text-green-800 py-2 px-4 rounded-lg font-medium hover:bg-green-200 transition-all"
+        >
+          <Eye className="w-4 h-4 inline mr-2" />
+          View Club
+        </button>
+      );
+    }
+
+    if ((isMember && membershipStatus === 'pending') || joinClicked) {
+      return (
+        <div className="flex gap-2">
           <button className="w-full bg-yellow-100 text-yellow-800 py-2 px-4 rounded-lg font-medium cursor-not-allowed">
             <Clock className="w-4 h-4 inline mr-2" />
             Pending Approval
           </button>
-        );
-      }
-      return (
-        <button className="w-full bg-green-100 text-green-800 py-2 px-4 rounded-lg font-medium cursor-not-allowed">
-          ✓ Member
-        </button>
-      );
-    }
-
-    if (userRole === 'club_head' && club.club_head_id === userId) {
-      return (
-        <button
-          onClick={() => onManage?.(club.id)}
-          className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all"
-        >
-          <Crown className="w-4 h-4 inline mr-2" />
-          Manage Club
-        </button>
+          <button
+            onClick={() => onView?.(club.id)}
+            className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
+          >
+            <Eye className="w-4 h-4 inline mr-2" />
+            View Club
+          </button>
+        </div>
       );
     }
 
     return (
-      <button
-        onClick={() => onJoin?.(club.id)}
-        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
-      >
-        Join Club
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={handleJoin}
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
+        >
+          Join Club
+        </button>
+        <button
+          onClick={() => onView?.(club.id)}
+          className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
+        >
+          <Eye className="w-4 h-4 inline mr-2" />
+          View Club
+        </button>
+      </div>
     );
   };
 
@@ -79,9 +123,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
 
       <p className="text-gray-600 mb-6 line-clamp-3">{club.description}</p>
 
-      <div className="space-y-3">
-        {getButtonContent()}
-      </div>
+      <div className="space-y-3">{renderButtons()}</div>
     </div>
   );
 };

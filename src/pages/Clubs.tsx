@@ -1,32 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, Plus, Users, Settings } from 'lucide-react';
-import { fetchClubs, joinClub } from '../store/slices/clubSlice';
+import { Search, Filter, Plus, Users } from 'lucide-react';
+import { fetchClubs, joinClub, fetchUserClubMemberships } from '../store/slices/clubSlice';
 import ClubCard from '../components/Clubs/ClubCard';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
 
-// Role validation helper
-const validRoles = ['club_head', 'member', 'secretary', 'treasurer', 'event_manager'] as const;
-type Role = typeof validRoles[number];
-const isValidRole = (role: string): role is Role => validRoles.includes(role as Role);
+type ClubRole = 'club_head' | 'member' | 'secretary' | 'treasurer' | 'event_manager';
+const validRoles: ClubRole[] = ['club_head', 'member', 'secretary', 'treasurer', 'event_manager'];
+const isValidClubRole = (role: string): role is ClubRole => validRoles.includes(role as ClubRole);
 
 const Clubs: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { clubs, loading } = useSelector((state: RootState) => state.clubs);
+  const { clubs, loading, userClubMemberships } = useSelector((state: RootState) => state.clubs);
   const { user } = useSelector((state: RootState) => state.auth);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
   useEffect(() => {
     dispatch(fetchClubs());
-  }, [dispatch]);
+    if (user?.id) dispatch(fetchUserClubMemberships(user.id));
+  }, [dispatch, user?.id]);
 
   const handleJoinClub = async (clubId: string) => {
-    if (!user || !isValidRole(user.role)) return;
-
+    if (!user || !user.id) return;
     try {
       await dispatch(joinClub({ clubId, userId: user.id })).unwrap();
       toast.success('Join request submitted successfully!');
@@ -39,18 +39,26 @@ const Clubs: React.FC = () => {
     navigate(`/club-management?clubId=${clubId}&clubName=${encodeURIComponent(clubName)}`);
   };
 
+  const handleViewClub = (clubId: string, clubName: string) => {
+    navigate(`/club/${clubId}?name=${encodeURIComponent(clubName)}`);
+  };
+
   const categories = ['Academic', 'Sports', 'Cultural', 'Technical', 'Social Service', 'Arts'];
 
   const filteredClubs = clubs.filter(club => {
     const matchesSearch =
       club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       club.description.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesCategory = !selectedCategory || club.category === selectedCategory;
-
     return matchesSearch && matchesCategory;
   });
 
+  const getMembershipDetails = (clubId: string) => {
+    const membership = userClubMemberships?.find(m => m.club_id === clubId);
+    const isApproved = membership?.status === 'approved';
+    const userRole = isValidClubRole(membership?.position || '') ? (membership?.position as ClubRole) : undefined;
+    return { isApproved, userRole, status: membership?.status };
+  };
 
   if (loading) {
     return (
@@ -67,8 +75,7 @@ const Clubs: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Student Clubs</h1>
           <p className="text-gray-600 mt-2">Discover and join amazing student organizations</p>
         </div>
-
-        {isValidRole(user?.role || '') && user?.role === 'club_head' && (
+        {user?.role === 'club_head' && (
           <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2">
             <Plus className="w-5 h-5" />
             <span>Create Club</span>
@@ -123,16 +130,23 @@ const Clubs: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClubs.map(club => (
-          <ClubCard
-            key={club.id}
-            club={club}
-            onJoin={handleJoinClub}
-            onManage={() => handleManageClub(club.id, club.name)}
-            userRole={user?.role}
-            userId={user?.id}
-          />
-        ))}
+        {filteredClubs.map(club => {
+          const { isApproved, userRole, status } = getMembershipDetails(club.id);
+
+          return (
+            <ClubCard
+              key={club.id}
+              club={club}
+              onJoin={handleJoinClub}
+              onManage={() => handleManageClub(club.id, club.name)}
+              onView={() => handleViewClub(club.id, club.name)}
+              userRole={userRole}
+              membershipStatus={status}
+              isMember={!!status}
+              userId={user?.id}
+            />
+          );
+        })}
       </div>
 
       {filteredClubs.length === 0 && (

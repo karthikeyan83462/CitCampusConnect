@@ -17,8 +17,10 @@ interface ClubState {
   myClubs: Club[];
   clubMembers: ClubMemberWithProfile[];
   membershipRequests: ClubMemberWithProfile[];
+  userClubMemberships: ClubMember[];
   loading: boolean;
   error: string | null;
+  currentUserClubRole: 'club_head' | 'member' | 'secretary' | 'treasurer' | 'event_manager' | undefined;
 }
 
 const initialState: ClubState = {
@@ -26,21 +28,62 @@ const initialState: ClubState = {
   myClubs: [],
   clubMembers: [],
   membershipRequests: [],
+  userClubMemberships: [],
   loading: false,
   error: null,
+  currentUserClubRole: undefined,
 };
 
+export const fetchUserClubMemberships = createAsyncThunk(
+  'clubs/fetchUserClubMemberships',
+  async (userId: string) => {
+    const { data, error } = await supabase
+      .from('club_members')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data;
+  }
+);
+
+// ✅ Get current user's role in a given club
+export const fetchMyRoleInClub = createAsyncThunk(
+  'clubs/fetchMyRoleInClub',
+  async ({ clubId, userId }: { clubId: string; userId: string }) => {
+    const clubRes = await supabase.from('clubs').select('*').eq('id', clubId).single();
+    if (clubRes.error) throw clubRes.error;
+
+    if (clubRes.data.club_head_id === userId) {
+      return 'club_head';
+    }
+
+    const memberRes = await supabase
+      .from('club_members')
+      .select('*')
+      .eq('club_id', clubId)
+      .eq('user_id', userId)
+      .eq('status', 'approved')
+      .single();
+
+    if (memberRes.error || !memberRes.data) return undefined;
+    return memberRes.data.position as ClubState['currentUserClubRole'];
+  }
+);
+
+// ✅ Fetch all active clubs
 export const fetchClubs = createAsyncThunk('clubs/fetchClubs', async () => {
   const { data, error } = await supabase
     .from('clubs')
     .select('*')
     .eq('is_active', true)
     .order('name');
-  
+
   if (error) throw error;
   return data;
 });
 
+// ✅ Fetch approved members of a club
 export const fetchClubMembers = createAsyncThunk(
   'clubs/fetchClubMembers',
   async (clubId: string) => {
@@ -61,6 +104,7 @@ export const fetchClubMembers = createAsyncThunk(
   }
 );
 
+// ✅ Fetch pending membership requests
 export const fetchMembershipRequests = createAsyncThunk(
   'clubs/fetchMembershipRequests',
   async (clubId: string) => {
@@ -81,7 +125,7 @@ export const fetchMembershipRequests = createAsyncThunk(
   }
 );
 
-
+// ✅ Update member status (approve/reject) + assign role
 export const updateMembershipStatus = createAsyncThunk(
   'clubs/updateMembershipStatus',
   async ({
@@ -112,8 +156,7 @@ export const updateMembershipStatus = createAsyncThunk(
   }
 );
 
-
-
+// ✅ Join a club (creates pending request)
 export const joinClub = createAsyncThunk(
   'clubs/joinClub',
   async ({ clubId, userId }: { clubId: string; userId: string }) => {
@@ -137,8 +180,7 @@ export const joinClub = createAsyncThunk(
   }
 );
 
-
-
+// ✅ Leave a club
 export const leaveClub = createAsyncThunk(
   'clubs/leaveClub',
   async ({ clubId, userId }: { clubId: string; userId: string }) => {
@@ -147,7 +189,7 @@ export const leaveClub = createAsyncThunk(
       .delete()
       .eq('club_id', clubId)
       .eq('user_id', userId);
-    
+
     if (error) throw error;
     return { clubId, userId };
   }
@@ -163,7 +205,6 @@ const clubSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Clubs
       .addCase(fetchClubs.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -177,8 +218,7 @@ const clubSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch clubs';
       })
-      
-      // Fetch Club Members
+
       .addCase(fetchClubMembers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -193,7 +233,6 @@ const clubSlice = createSlice({
         state.error = action.error.message || 'Failed to fetch club members';
       })
 
-      // Fetch Membership Requests
       .addCase(fetchMembershipRequests.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -208,7 +247,6 @@ const clubSlice = createSlice({
         state.error = action.error.message || 'Failed to fetch membership requests';
       })
 
-      // Update Membership Status
       .addCase(updateMembershipStatus.fulfilled, (state, action: PayloadAction<ClubMemberWithProfile>) => {
         const { status } = action.payload;
         if (status === 'approved') {
@@ -219,17 +257,24 @@ const clubSlice = createSlice({
         }
       })
 
-      // Join Club
-      .addCase(joinClub.fulfilled, (state, action: PayloadAction<ClubMember & { profile: Profile }>) => {
-        state.membershipRequests.push(action.payload as ClubMemberWithProfile);
+      .addCase(joinClub.fulfilled, (state, action: PayloadAction<ClubMemberWithProfile>) => {
+        state.membershipRequests.push(action.payload);
       })
 
-      // Leave Club
       .addCase(leaveClub.fulfilled, (state, action) => {
         state.clubMembers = state.clubMembers.filter(
           member => !(member.club_id === action.payload.clubId && member.user_id === action.payload.userId)
         );
-      });
+      })
+
+      .addCase(fetchMyRoleInClub.fulfilled, (state, action: PayloadAction<ClubState['currentUserClubRole']>) => {
+        state.currentUserClubRole = action.payload;
+      })
+
+      .addCase(fetchUserClubMemberships.fulfilled, (state, action: PayloadAction<ClubMember[]>) => {
+        state.userClubMemberships = action.payload;
+      })
+
   },
 });
 
