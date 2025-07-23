@@ -9,6 +9,7 @@ interface ClubCardProps {
   onJoin?: (clubId: string) => void;
   onManage?: (clubId: string) => void;
   userRole?: string;
+  userId?: string;
   isMember?: boolean;
   membershipStatus?: 'pending' | 'approved' | 'rejected';
 }
@@ -18,6 +19,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
   onJoin, 
   onManage, 
   userRole, 
+  userId,
   isMember,
   membershipStatus 
 }) => {
@@ -38,7 +40,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
       );
     }
 
-    if (userRole === 'club_head') {
+    if (userRole === 'club_head' && club.club_head_id === userId) {
       return (
         <button
           onClick={() => onManage?.(club.id)}
@@ -74,9 +76,9 @@ const ClubCard: React.FC<ClubCardProps> = ({
           <span className="text-sm">{club.member_count}</span>
         </div>
       </div>
-      
+
       <p className="text-gray-600 mb-6 line-clamp-3">{club.description}</p>
-      
+
       <div className="space-y-3">
         {getButtonContent()}
       </div>

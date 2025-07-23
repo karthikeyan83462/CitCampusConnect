@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, Plus, Users } from 'lucide-react';
+import { Search, Filter, Plus, Users, Settings } from 'lucide-react';
 import { fetchClubs, joinClub } from '../store/slices/clubSlice';
 import ClubCard from '../components/Clubs/ClubCard';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
+
+// Role validation helper
+const validRoles = ['club_head', 'member', 'secretary', 'treasurer', 'event_manager'] as const;
+type Role = typeof validRoles[number];
+const isValidRole = (role: string): role is Role => validRoles.includes(role as Role);
 
 const Clubs: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { clubs, loading } = useSelector((state: RootState) => state.clubs);
   const { user } = useSelector((state: RootState) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,8 +25,8 @@ const Clubs: React.FC = () => {
   }, [dispatch]);
 
   const handleJoinClub = async (clubId: string) => {
-    if (!user) return;
-    
+    if (!user || !isValidRole(user.role)) return;
+
     try {
       await dispatch(joinClub({ clubId, userId: user.id })).unwrap();
       toast.success('Join request submitted successfully!');
@@ -28,14 +35,22 @@ const Clubs: React.FC = () => {
     }
   };
 
+  const handleManageClub = (clubId: string, clubName: string) => {
+    navigate(`/club-management?clubId=${clubId}&clubName=${encodeURIComponent(clubName)}`);
+  };
+
   const categories = ['Academic', 'Sports', 'Cultural', 'Technical', 'Social Service', 'Arts'];
 
   const filteredClubs = clubs.filter(club => {
-    const matchesSearch = club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         club.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      club.description.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesCategory = !selectedCategory || club.category === selectedCategory;
+
     return matchesSearch && matchesCategory;
   });
+
 
   if (loading) {
     return (
@@ -47,14 +62,13 @@ const Clubs: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Student Clubs</h1>
           <p className="text-gray-600 mt-2">Discover and join amazing student organizations</p>
         </div>
-        
-        {user?.role === 'club_head' && (
+
+        {isValidRole(user?.role || '') && user?.role === 'club_head' && (
           <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2">
             <Plus className="w-5 h-5" />
             <span>Create Club</span>
@@ -62,7 +76,6 @@ const Clubs: React.FC = () => {
         )}
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
@@ -75,7 +88,7 @@ const Clubs: React.FC = () => {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
+
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <select
@@ -92,7 +105,6 @@ const Clubs: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-lg p-6 text-center">
           <div className="text-3xl font-bold text-blue-600 mb-2">{clubs.length}</div>
@@ -104,20 +116,21 @@ const Clubs: React.FC = () => {
         </div>
         <div className="bg-white rounded-xl shadow-lg p-6 text-center">
           <div className="text-3xl font-bold text-purple-600 mb-2">
-            {clubs.reduce((sum, club) => sum + club.member_count, 0)}
+            {clubs.reduce((sum, club) => sum + (club.member_count || 0), 0)}
           </div>
           <div className="text-gray-600">Total Members</div>
         </div>
       </div>
 
-      {/* Clubs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClubs.map(club => (
           <ClubCard
             key={club.id}
             club={club}
             onJoin={handleJoinClub}
+            onManage={() => handleManageClub(club.id, club.name)}
             userRole={user?.role}
+            userId={user?.id}
           />
         ))}
       </div>
