@@ -395,7 +395,7 @@ const Clubs: React.FC = () => {
   };
 
   const handleViewClub = (clubId: string, clubName: string) => {
-    navigate(`/club/${clubId}?name=${encodeURIComponent(clubName)}`);
+    navigate(`/view-club/${clubId}?name=${encodeURIComponent(clubName)}`);
   };
 
   const categories = ['Academic', 'Sports', 'Cultural', 'Technical', 'Social Service', 'Arts'];

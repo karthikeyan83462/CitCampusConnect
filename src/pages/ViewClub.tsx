@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Users, User, Crown, Shield, Star } from 'lucide-react';
@@ -30,7 +30,7 @@ const Header = styled.div`
 const ClubTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
@@ -40,23 +40,24 @@ const ClubTitle = styled.h1`
 `;
 
 const LoadingText = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 1.125rem;
   text-align: center;
   padding: 2rem;
 `;
 
 const MembersContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const MembersTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
@@ -70,7 +71,7 @@ const TitleIcon = styled(Users)`
 `;
 
 const EmptyMessage = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   text-align: center;
   padding: 2rem;
 `;
@@ -85,17 +86,18 @@ const MembersList = styled.ul`
 `;
 
 const MemberItem = styled.li`
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: all 0.2s ease;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#ffffff'};
   
   &:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
+    background-color: ${props => props.theme.isDark ? '#475569' : '#f8fafc'};
+    border-color: ${props => props.theme.isDark ? '#64748b' : '#cbd5e1'};
   }
 `;
 
@@ -103,13 +105,13 @@ const MemberInfo = styled.div``;
 
 const MemberName = styled.p`
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 0.25rem 0;
 `;
 
 const MemberEmail = styled.p`
   font-size: 0.875rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0;
 `;
 
@@ -138,7 +140,7 @@ const PositionBadge = styled.span<{ position: string }>`
   }}
 `;
 
-const ViewClub = () => {
+const ViewClub: React.FC = () => {
   const { clubId } = useParams();
   const search = new URLSearchParams(useLocation().search);
   const name = search.get('name');
