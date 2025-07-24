@@ -1,10 +1,327 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, Plus, Heart } from 'lucide-react';
+import { Search, Filter, Plus, Heart, Package, Tag, Star, DollarSign } from 'lucide-react';
 import { fetchItems, addToWishlist, removeFromWishlist } from '../store/slices/marketplaceSlice';
 import ProductCard from '../components/Marketplace/ProductCard';
 import SellItemModal from '../components/Marketplace/SellItemModal';
 import type { RootState, AppDispatch } from '../store/store';
+import styled, { keyframes } from 'styled-components';
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const MarketplaceContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24rem;
+`;
+
+const Spinner = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #8b5cf6;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const HeaderTitle = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+  
+  @media (min-width: 640px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const HeaderSubtitle = styled.p`
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+  font-size: 1.125rem;
+`;
+
+const SellButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: flex-start;
+  
+  @media (min-width: 768px) {
+    align-self: center;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  }
+`;
+
+const ButtonIcon = styled(Plus)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const FiltersContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+`;
+
+const FiltersGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const InputContainer = styled.div`
+  position: relative;
+`;
+
+const InputIcon = styled.div`
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 0.75rem 0.875rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #94a3b8;
+  }
+`;
+
+const FilterSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem 0.75rem 0.875rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+`;
+
+const WishlistButton = styled.button<{ isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.isActive ? `
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+  ` : `
+    background-color: white;
+    border-color: #e2e8f0;
+    color: #64748b;
+    
+    &:hover {
+      background-color: #f8fafc;
+      border-color: #cbd5e1;
+    }
+  `}
+`;
+
+const WishlistIcon = styled(Heart)<{ isActive: boolean }>`
+  width: 1.25rem;
+  height: 1.25rem;
+  
+  ${props => props.isActive && `
+    fill: currentColor;
+  `}
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+`;
+
+const StatCard = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
+
+const StatValue = styled.div<{ color: string }>`
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${props => props.color};
+  margin-bottom: 0.5rem;
+  line-height: 1;
+  
+  @media (min-width: 640px) {
+    font-size: 2.25rem;
+  }
+`;
+
+const StatLabel = styled.div`
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+`;
+
+const ItemsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const EmptyState = styled.div`
+  text-center: center;
+  padding: 3rem 1.5rem;
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  
+  @media (min-width: 640px) {
+    padding: 4rem 2rem;
+  }
+`;
+
+const EmptyIcon = styled(Search)`
+  width: 3rem;
+  height: 3rem;
+  color: #cbd5e1;
+  margin: 0 auto 1rem;
+  
+  @media (min-width: 640px) {
+    width: 4rem;
+    height: 4rem;
+  }
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  
+  @media (min-width: 640px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const EmptyText = styled.p`
+  color: #64748b;
+  font-size: 0.875rem;
+`;
+
+const SearchIcon = styled(Search)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const FilterIcon = styled(Filter)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const Marketplace: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -38,98 +355,93 @@ const Marketplace: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <LoadingContainer>
+        <Spinner />
+      </LoadingContainer>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <MarketplaceContainer>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Student Marketplace</h1>
-          <p className="text-gray-600 mt-2">Buy and sell items with your fellow students</p>
-        </div>
+      <Header>
+        <HeaderContent>
+          <HeaderTitle>Student Marketplace</HeaderTitle>
+          <HeaderSubtitle>Buy and sell items with your fellow students</HeaderSubtitle>
+        </HeaderContent>
+        
         {user && (
-          <button
-            onClick={() => setIsSellModalOpen(true)}
-            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all flex items-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Sell Item</span>
-          </button>
+          <SellButton onClick={() => setIsSellModalOpen(true)}>
+            <ButtonIcon />
+            Sell Item
+          </SellButton>
         )}
-
-      </div>
+      </Header>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
+      <FiltersContainer>
+        <FiltersGrid>
+          <InputContainer>
+            <InputIcon>
+              <SearchIcon />
+            </InputIcon>
+            <SearchInput
               type="text"
               placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-          </div>
+          </InputContainer>
           
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <select
+          <InputContainer>
+            <InputIcon>
+              <FilterIcon />
+            </InputIcon>
+            <FilterSelect
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
             >
               <option value="">All Categories</option>
               {categories.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
-            </select>
-          </div>
+            </FilterSelect>
+          </InputContainer>
 
-          <button
+          <WishlistButton
+            isActive={showWishlistOnly}
             onClick={() => setShowWishlistOnly(!showWishlistOnly)}
-            className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg border transition-all ${
-              showWishlistOnly
-                ? 'bg-red-50 border-red-200 text-red-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
           >
-            <Heart className={`w-5 h-5 ${showWishlistOnly ? 'fill-current' : ''}`} />
+            <WishlistIcon isActive={showWishlistOnly} />
             <span>Wishlist Only</span>
-          </button>
-        </div>
-      </div>
+          </WishlistButton>
+        </FiltersGrid>
+      </FiltersContainer>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-          <div className="text-3xl font-bold text-purple-600 mb-2">{items.length}</div>
-          <div className="text-gray-600">Items Available</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-          <div className="text-3xl font-bold text-green-600 mb-2">{categories.length}</div>
-          <div className="text-gray-600">Categories</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">{wishlist.length}</div>
-          <div className="text-gray-600">Wishlisted</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-          <div className="text-3xl font-bold text-orange-600 mb-2">
+      <StatsGrid>
+        <StatCard>
+          <StatValue color="#8b5cf6">{items.length}</StatValue>
+          <StatLabel>Items Available</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatValue color="#10b981">{categories.length}</StatValue>
+          <StatLabel>Categories</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatValue color="#3b82f6">{wishlist.length}</StatValue>
+          <StatLabel>Wishlisted</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatValue color="#f59e0b">
             ₹{items.reduce((sum, item) => sum + item.price, 0).toLocaleString()}
-          </div>
-          <div className="text-gray-600">Total Value</div>
-        </div>
-      </div>
+          </StatValue>
+          <StatLabel>Total Value</StatLabel>
+        </StatCard>
+      </StatsGrid>
 
       {/* Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ItemsGrid>
         {filteredItems.map(item => (
           <ProductCard
             key={item.id}
@@ -138,16 +450,14 @@ const Marketplace: React.FC = () => {
             onWishlistToggle={handleWishlistToggle}
           />
         ))}
-      </div>
+      </ItemsGrid>
 
       {filteredItems.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-300 mb-4">
-            <Search className="w-16 h-16 mx-auto" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No items found</h3>
-          <p className="text-gray-600">Try adjusting your search or filter criteria</p>
-        </div>
+        <EmptyState>
+          <EmptyIcon />
+          <EmptyTitle>No items found</EmptyTitle>
+          <EmptyText>Try adjusting your search or filter criteria</EmptyText>
+        </EmptyState>
       )}
 
       {/* Sell Item Modal */}
@@ -158,7 +468,7 @@ const Marketplace: React.FC = () => {
           userId={user.id}
         />
       )}
-    </div>
+    </MarketplaceContainer>
   );
 };
 

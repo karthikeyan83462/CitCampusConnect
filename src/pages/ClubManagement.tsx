@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { PlusCircle, Users, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Users, CheckCircle, XCircle, Settings, UserCheck, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store/store';
@@ -11,6 +11,449 @@ import {
     updateMembershipStatus,
     leaveClub
 } from '../store/slices/clubSlice';
+import styled, { keyframes } from 'styled-components';
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const ClubManagementContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24rem;
+`;
+
+const Spinner = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 1.5rem;
+`;
+
+const EmptyIcon = styled(Users)`
+  width: 4rem;
+  height: 4rem;
+  color: #cbd5e1;
+  margin: 0 auto 1rem;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+`;
+
+const EmptyText = styled.p`
+  color: #64748b;
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const HeaderTitle = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+  
+  @media (min-width: 640px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const HeaderSubtitle = styled.p`
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+  font-size: 1.125rem;
+`;
+
+const CreateEventButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: flex-start;
+  
+  @media (min-width: 768px) {
+    align-self: center;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+`;
+
+const ButtonIcon = styled(PlusCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const ClubSelectorContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+`;
+
+const SelectLabel = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+`;
+
+const ClubSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const TabContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+`;
+
+const TabHeader = styled.div`
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const TabButton = styled.button<{ isActive: boolean }>`
+  flex: 1;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.isActive ? `
+    color: #3b82f6;
+    border-bottom: 2px solid #3b82f6;
+    background-color: #f8fafc;
+  ` : `
+    color: #64748b;
+    
+    &:hover {
+      color: #334155;
+      background-color: #f8fafc;
+    }
+  `}
+`;
+
+const TabContent = styled.div`
+  padding: 1.5rem;
+`;
+
+const MemberList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const MemberItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #f1f5f9;
+  }
+`;
+
+const MemberInfo = styled.div``;
+
+const MemberName = styled.h4`
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+`;
+
+const MemberDetails = styled.p`
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+`;
+
+const RemoveButton = styled.button`
+  color: #ef4444;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #dc2626;
+  }
+`;
+
+const RequestList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const RequestItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const RequestInfo = styled.div`
+  flex: 1;
+`;
+
+const RequestName = styled.h4`
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+`;
+
+const RequestDetails = styled.p`
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+`;
+
+const RoleSelect = styled.select`
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: white;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const ActionButton = styled.button<{ variant: 'approve' | 'reject' }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.variant === 'approve' ? `
+    color: #10b981;
+    
+    &:hover {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+  ` : `
+    color: #ef4444;
+    
+    &:hover {
+      background-color: #fef2f2;
+      color: #dc2626;
+    }
+  `}
+`;
+
+const SettingsForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const FormLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  resize: vertical;
+  min-height: 6rem;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const SaveButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-end;
+  
+  &:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+`;
+
+const EmptyMessage = styled.p`
+  color: #64748b;
+  text-align: center;
+  padding: 2rem;
+`;
+
+const CheckCircleIcon = styled(CheckCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const XCircleIcon = styled(XCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const ClubManagement: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -91,184 +534,170 @@ const ClubManagement: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-96">
-                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
+            <LoadingContainer>
+                <Spinner />
+            </LoadingContainer>
         );
     }
 
     if (!user) {
         return (
-            <div className="text-center py-12">
-                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Clubs Found</h3>
-                <p className="text-gray-600">You are not a club head or secretary of any clubs.</p>
-            </div>
+            <EmptyState>
+                <EmptyIcon />
+                <EmptyTitle>No Clubs Found</EmptyTitle>
+                <EmptyText>You are not a club head or secretary of any clubs.</EmptyText>
+            </EmptyState>
         );
     }
 
     return (
-        <div className="space-y-8">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
+        <ClubManagementContainer>
+            <Header>
+                <HeaderContent>
+                    <HeaderTitle>
                         Club Management {passedClubName ? `- ${passedClubName}` : ''}
-                    </h1>
-                    <p className="text-gray-600 mt-2">Manage your clubs and members</p>
-                </div>
-                <button
+                    </HeaderTitle>
+                    <HeaderSubtitle>Manage your clubs and members</HeaderSubtitle>
+                </HeaderContent>
+                <CreateEventButton
                     onClick={() => navigate('/create-event', { state: { clubId: selectedClub } })}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2"
                 >
-                    <PlusCircle className="w-5 h-5" />
+                    <ButtonIcon />
                     <span>Create Event</span>
-                </button>
-            </div>
+                </CreateEventButton>
+            </Header>
 
-            <div className="bg-white rounded-xl shadow-lg p-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Club</label>
-                <select
+            <ClubSelectorContainer>
+                <SelectLabel>Select Club</SelectLabel>
+                <ClubSelect
                     value={selectedClub}
                     onChange={(e) => setSelectedClub(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                     <option value="">Select a club</option>
                     {myClubs.map(club => (
                         <option key={club.id} value={club.id}>{club.name}</option>
                     ))}
-                </select>
-            </div>
+                </ClubSelect>
+            </ClubSelectorContainer>
 
             {selectedClub && (
-                <div className="bg-white rounded-xl shadow-lg">
-                    <div className="flex border-b">
+                <TabContainer>
+                    <TabHeader>
                         {['members', 'requests', 'settings'].map(tab => (
-                            <button
+                            <TabButton
                                 key={tab}
+                                isActive={activeTab === tab}
                                 onClick={() => setActiveTab(tab as any)}
-                                className={`flex-1 px-6 py-4 text-center ${activeTab === tab
-                                    ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
-                                    : 'text-gray-500 hover:text-gray-700'
-                                    }`}
                             >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            </button>
+                            </TabButton>
                         ))}
-                    </div>
+                    </TabHeader>
 
-                    <div className="p-6">
+                    <TabContent>
                         {activeTab === 'members' && (
-                            <div className="space-y-4">
+                            <MemberList>
                                 {clubMembers.length === 0 ? (
-                                    <p className="text-gray-500 text-center py-4">No members found</p>
+                                    <EmptyMessage>No members found</EmptyMessage>
                                 ) : (
                                     clubMembers.map(member => (
-                                        <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">{member.profile?.full_name ?? 'Unknown Member'}</h4>
-                                                <p className="text-sm text-gray-500">
+                                        <MemberItem key={member.id}>
+                                            <MemberInfo>
+                                                <MemberName>{member.profile?.full_name ?? 'Unknown Member'}</MemberName>
+                                                <MemberDetails>
                                                     {member.position} • Joined {new Date(member.joined_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            <button
+                                                </MemberDetails>
+                                            </MemberInfo>
+                                            <RemoveButton
                                                 onClick={() => handleRemoveMember(member.user_id)}
-                                                className="text-red-600 hover:text-red-700"
                                             >
                                                 Remove
-                                            </button>
-                                        </div>
+                                            </RemoveButton>
+                                        </MemberItem>
                                     ))
                                 )}
-                            </div>
+                            </MemberList>
                         )}
 
                         {activeTab === 'requests' && (
-                            <div className="space-y-4">
+                            <RequestList>
                                 {membershipRequests.length === 0 ? (
-                                    <p className="text-gray-500 text-center py-4">No pending requests</p>
+                                    <EmptyMessage>No pending requests</EmptyMessage>
                                 ) : (
                                     membershipRequests.map(request => (
-                                        <div
-                                            key={request.id}
-                                            className="flex flex-col md:flex-row items-center justify-between p-4 bg-gray-50 rounded-lg space-y-2 md:space-y-0 md:space-x-4"
-                                        >
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">{request.profile?.full_name ?? 'Unknown Member'}</h4>
-                                                <p className="text-sm text-gray-500">
+                                        <RequestItem key={request.id}>
+                                            <RequestInfo>
+                                                <RequestName>{request.profile?.full_name ?? 'Unknown Member'}</RequestName>
+                                                <RequestDetails>
                                                     Requested on {new Date(request.joined_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            <select
+                                                </RequestDetails>
+                                            </RequestInfo>
+                                            <RoleSelect
                                                 value={assignRoles[request.id] || 'member'}
                                                 onChange={(e) =>
                                                     setAssignRoles(prev => ({ ...prev, [request.id]: e.target.value }))
                                                 }
-                                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
                                             >
                                                 {roleOptions.map(role => (
                                                     <option key={role} value={role}>{role}</option>
                                                 ))}
-                                            </select>
-                                            <div className="flex space-x-2">
-                                                <button
+                                            </RoleSelect>
+                                            <ActionButtons>
+                                                <ActionButton
+                                                    variant="approve"
                                                     onClick={() => handleApproveRequest(request.id, assignRoles[request.id] || 'member')}
-                                                    className="text-green-600 hover:text-green-700"
                                                 >
-                                                    <CheckCircle className="w-5 h-5" />
-                                                </button>
-                                                <button
+                                                    <CheckCircleIcon />
+                                                </ActionButton>
+                                                <ActionButton
+                                                    variant="reject"
                                                     onClick={() => handleRejectRequest(request.id)}
-                                                    className="text-red-600 hover:text-red-700"
                                                 >
-                                                    <XCircle className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        </div>
+                                                    <XCircleIcon />
+                                                </ActionButton>
+                                            </ActionButtons>
+                                        </RequestItem>
                                     ))
                                 )}
-                            </div>
+                            </RequestList>
                         )}
 
                         {activeTab === 'settings' && (
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Club Name</label>
-                                    <input
+                            <SettingsForm>
+                                <FormGroup>
+                                    <FormLabel>Club Name</FormLabel>
+                                    <FormInput
                                         type="text"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Enter club name"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                    <textarea
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                </FormGroup>
+                                <FormGroup>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormTextarea
                                         rows={4}
                                         placeholder="Enter club description"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </FormGroup>
+                                <FormGroup>
+                                    <FormLabel>Category</FormLabel>
+                                    <FormSelect>
                                         <option value="Academic">Academic</option>
                                         <option value="Sports">Sports</option>
                                         <option value="Cultural">Cultural</option>
                                         <option value="Technical">Technical</option>
                                         <option value="Social Service">Social Service</option>
                                         <option value="Arts">Arts</option>
-                                    </select>
-                                </div>
-                                <div className="flex justify-end">
-                                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-all">
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </div>
+                                    </FormSelect>
+                                </FormGroup>
+                                <SaveButton>
+                                    Save Changes
+                                </SaveButton>
+                            </SettingsForm>
                         )}
-                    </div>
-                </div>
+                    </TabContent>
+                </TabContainer>
             )}
-        </div>
+        </ClubManagementContainer>
     );
 };
 

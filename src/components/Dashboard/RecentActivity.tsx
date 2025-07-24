@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, Users, AlertCircle, ShoppingCart, MessageSquare } from 'lucide-react';
+import { Users, AlertCircle, ShoppingCart, MessageSquare, Clock } from 'lucide-react';
+import styled from 'styled-components';
 
 interface ActivityItem {
   id: string;
@@ -10,6 +11,159 @@ interface ActivityItem {
   timestamp: Date;
   status?: 'pending' | 'approved' | 'completed' | 'urgent';
 }
+
+const ActivityContainer = styled.div`
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+`;
+
+const ActivityTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1.5rem;
+`;
+
+const ActivityList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ActivityItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    background-color: #f9fafb;
+  }
+`;
+
+const ActivityIcon = styled.div`
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+`;
+
+const ActivityContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ActivityHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ActivityTitleText = styled.p`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const StatusBadge = styled.span<{ status: string }>`
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: ${props => {
+    switch (props.status) {
+      case 'approved':
+      case 'completed':
+        return '#dcfce7';
+      case 'pending':
+        return '#fef3c7';
+      case 'urgent':
+        return '#fee2e2';
+      default:
+        return '#f3f4f6';
+    }
+  }};
+  color: ${props => {
+    switch (props.status) {
+      case 'approved':
+      case 'completed':
+        return '#166534';
+      case 'pending':
+        return '#92400e';
+      case 'urgent':
+        return '#991b1b';
+      default:
+        return '#374151';
+    }
+  }};
+`;
+
+const ActivityDescription = styled.p`
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-top: 0.25rem;
+`;
+
+const ActivityTime = styled.p`
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+`;
+
+const TimeIcon = styled(Clock)`
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.25rem;
+`;
+
+const ViewAllButton = styled.button`
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &:hover {
+    color: #1d4ed8;
+  }
+`;
+
+const UsersIcon = styled(Users)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #3b82f6;
+`;
+
+const AlertCircleIcon = styled(AlertCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #f59e0b;
+`;
+
+const ShoppingCartIcon = styled(ShoppingCart)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #10b981;
+`;
+
+const MessageSquareIcon = styled(MessageSquare)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #8b5cf6;
+`;
+
+const ClockIcon = styled(Clock)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+`;
 
 const RecentActivity: React.FC = () => {
   const activities: ActivityItem[] = [
@@ -55,74 +209,57 @@ const RecentActivity: React.FC = () => {
     },
   ];
 
-  const getIcon = (type: ActivityItem['type']) => {
+  const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'club':
-        return <Users className="w-5 h-5 text-blue-500" />;
-      case 'hostel':
-        return <AlertCircle className="w-5 h-5 text-orange-500" />;
-      case 'canteen':
-        return <ShoppingCart className="w-5 h-5 text-green-500" />;
-      case 'marketplace':
-      case 'message':
-        return <MessageSquare className="w-5 h-5 text-purple-500" />;
+      case 'club_joined':
+        return <UsersIcon />;
+      case 'complaint_submitted':
+        return <AlertCircleIcon />;
+      case 'order_placed':
+        return <ShoppingCartIcon />;
+      case 'item_sold':
+        return <MessageSquareIcon />;
       default:
-        return <Clock className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case 'approved':
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'urgent':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+        return <ClockIcon />;
     }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activity</h3>
+    <ActivityContainer>
+      <ActivityTitle>Recent Activity</ActivityTitle>
       
-      <div className="space-y-4">
+      <ActivityList>
         {activities.map((activity) => (
-          <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex-shrink-0 mt-1">
-              {getIcon(activity.type)}
-            </div>
+          <ActivityItem key={activity.id}>
+            <ActivityIcon>
+              {getActivityIcon(activity.type)}
+            </ActivityIcon>
             
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900 truncate">
+            <ActivityContent>
+              <ActivityHeader>
+                <ActivityTitleText>
                   {activity.title}
-                </p>
+                </ActivityTitleText>
                 {activity.status && (
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(activity.status)}`}>
+                  <StatusBadge status={activity.status}>
                     {activity.status}
-                  </span>
+                  </StatusBadge>
                 )}
-              </div>
-              <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-              <p className="text-xs text-gray-500 mt-2 flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
+              </ActivityHeader>
+              <ActivityDescription>{activity.description}</ActivityDescription>
+              <ActivityTime>
+                <TimeIcon />
                 {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-              </p>
-            </div>
-          </div>
+              </ActivityTime>
+            </ActivityContent>
+          </ActivityItem>
         ))}
-      </div>
+      </ActivityList>
       
-      <div className="mt-6 text-center">
-        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-          View all activities
-        </button>
-      </div>
-    </div>
+      <ViewAllButton>
+        View all activities
+      </ViewAllButton>
+    </ActivityContainer>
   );
 };
 

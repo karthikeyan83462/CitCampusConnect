@@ -1,13 +1,529 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { Building, AlertTriangle, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Building, AlertTriangle, Plus, Clock, CheckCircle, XCircle, Home, Shield, FileText } from 'lucide-react';
 import { fetchComplaints, submitComplaint } from '../store/slices/hostelSlice';
 import toast from 'react-hot-toast';
 import type { RootState, AppDispatch } from '../store/store';
 import type { Database } from '../lib/supabase';
+import styled, { keyframes } from 'styled-components';
 
 type ComplaintFormData = Database['public']['Tables']['hostel_complaints']['Insert'];
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const HostelContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24rem;
+`;
+
+const Spinner = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #10b981;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const HeaderTitle = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+  
+  @media (min-width: 640px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const HeaderSubtitle = styled.p`
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+  font-size: 1.125rem;
+`;
+
+const SubmitButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  align-self: flex-start;
+  
+  @media (min-width: 768px) {
+    align-self: center;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+`;
+
+const ButtonIcon = styled(Plus)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const StatCard = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+`;
+
+const CardIcon = styled.div`
+  color: #10b981;
+  display: flex;
+  align-items: center;
+`;
+
+const CardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const InfoLabel = styled.span`
+  color: #64748b;
+  font-size: 0.875rem;
+`;
+
+const InfoValue = styled.span<{ color?: string }>`
+  font-weight: 500;
+  color: ${props => props.color || '#1e293b'};
+`;
+
+const RulesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+`;
+
+const RuleItem = styled.p`
+  margin: 0;
+`;
+
+const ComplaintsContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+`;
+
+const ComplaintsTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 1.5rem;
+`;
+
+const EmptyIcon = styled(AlertTriangle)`
+  width: 4rem;
+  height: 4rem;
+  color: #cbd5e1;
+  margin: 0 auto 1rem;
+`;
+
+const EmptyTitle = styled.h4`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+`;
+
+const EmptyText = styled.p`
+  color: #64748b;
+`;
+
+const ComplaintsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ComplaintItem = styled.div`
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const ComplaintHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+`;
+
+const ComplaintInfo = styled.div`
+  flex: 1;
+`;
+
+const ComplaintTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+`;
+
+const StatusIcon = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ComplaintTitle = styled.h4`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+`;
+
+const PriorityBadge = styled.span<{ color: string }>`
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: ${props => props.color.split(' ')[0]};
+  color: ${props => props.color.split(' ')[1]};
+`;
+
+const ComplaintDescription = styled.p`
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+`;
+
+const ComplaintDetails = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #64748b;
+`;
+
+const StatusBadge = styled.span<{ status: string }>`
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  
+  ${props => {
+    switch (props.status) {
+      case 'resolved':
+        return 'background-color: #dcfce7; color: #166534;';
+      case 'in_progress':
+        return 'background-color: #fed7aa; color: #ea580c;';
+      default:
+        return 'background-color: #fef3c7; color: #d97706;';
+    }
+  }}
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  max-width: 28rem;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+`;
+
+const ModalHeader = styled.div`
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const ModalTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ModalTitleText = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: #64748b;
+  border-radius: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+  }
+`;
+
+const ModalForm = styled.form`
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const FormLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  resize: vertical;
+  min-height: 6rem;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0 0;
+`;
+
+const FormButtons = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+`;
+
+const CancelButton = styled.button`
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.875rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+  }
+`;
+
+const SubmitFormButton = styled.button`
+  flex: 1;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+`;
+
+const ClockIcon = styled(Clock)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #f59e0b;
+`;
+
+const AlertTriangleIcon = styled(AlertTriangle)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #f59e0b;
+`;
+
+const CheckCircleIcon = styled(CheckCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #10b981;
+`;
+
+const XCircleIcon = styled(XCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+`;
+
+const BuildingIcon = styled(Building)`
+  width: 1.5rem;
+  height: 1.5rem;
+`;
 
 const Hostel: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,13 +561,13 @@ const Hostel: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'open':
-        return <Clock className="w-5 h-5 text-yellow-500" />;
+        return <ClockIcon />;
       case 'in_progress':
-        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+        return <AlertTriangleIcon />;
       case 'resolved':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircleIcon />;
       default:
-        return <XCircle className="w-5 h-5 text-gray-500" />;
+        return <XCircleIcon />;
     }
   };
 
@@ -78,146 +594,156 @@ const Hostel: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <LoadingContainer>
+        <Spinner />
+      </LoadingContainer>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <HostelContainer>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hostel Services</h1>
-          <p className="text-gray-600 mt-2">Manage your room allocation and submit maintenance requests</p>
-        </div>
+      <Header>
+        <HeaderContent>
+          <HeaderTitle>Hostel Services</HeaderTitle>
+          <HeaderSubtitle>Manage your room allocation and submit maintenance requests</HeaderSubtitle>
+        </HeaderContent>
         
-        <button
-          onClick={() => setShowComplaintForm(true)}
-          className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
+        <SubmitButton onClick={() => setShowComplaintForm(true)}>
+          <ButtonIcon />
           <span>Submit Complaint</span>
-        </button>
-      </div>
+        </SubmitButton>
+      </Header>
 
       {/* Room Information */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Room Details</h3>
-            <Building className="w-6 h-6 text-emerald-600" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-gray-600">Block: <span className="font-medium text-gray-900">{user?.hostel_block || 'Not Assigned'}</span></p>
-            <p className="text-gray-600">Room: <span className="font-medium text-gray-900">{user?.room_number || 'Not Assigned'}</span></p>
-            <p className="text-gray-600">Occupancy: <span className="font-medium text-green-600">Active</span></p>
-          </div>
-        </div>
+      <StatsGrid>
+        <StatCard>
+          <CardHeader>
+            <CardTitle>Room Details</CardTitle>
+            <CardIcon>
+              <BuildingIcon />
+            </CardIcon>
+          </CardHeader>
+          <CardContent>
+            <InfoRow>
+              <InfoLabel>Block:</InfoLabel>
+              <InfoValue>{user?.hostel_block || 'Not Assigned'}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>Room:</InfoLabel>
+              <InfoValue>{user?.room_number || 'Not Assigned'}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>Occupancy:</InfoLabel>
+              <InfoValue color="#10b981">Active</InfoValue>
+            </InfoRow>
+          </CardContent>
+        </StatCard>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-          <div className="space-y-2">
-            <p className="text-gray-600">Total Complaints: <span className="font-medium text-gray-900">{complaints.length}</span></p>
-            <p className="text-gray-600">Open: <span className="font-medium text-yellow-600">{complaints.filter(c => c.status === 'open').length}</span></p>
-            <p className="text-gray-600">Resolved: <span className="font-medium text-green-600">{complaints.filter(c => c.status === 'resolved').length}</span></p>
-          </div>
-        </div>
+        <StatCard>
+          <CardHeader>
+            <CardTitle>Quick Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InfoRow>
+              <InfoLabel>Total Complaints:</InfoLabel>
+              <InfoValue>{complaints.length}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>Open:</InfoLabel>
+              <InfoValue color="#f59e0b">{complaints.filter(c => c.status === 'open').length}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>Resolved:</InfoLabel>
+              <InfoValue color="#10b981">{complaints.filter(c => c.status === 'resolved').length}</InfoValue>
+            </InfoRow>
+          </CardContent>
+        </StatCard>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Hostel Rules</h3>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p>• Quiet hours: 10 PM - 6 AM</p>
-            <p>• No outside visitors after 9 PM</p>
-            <p>• Keep common areas clean</p>
-            <p>• Report maintenance issues promptly</p>
-          </div>
-        </div>
-      </div>
+        <StatCard>
+          <CardHeader>
+            <CardTitle>Hostel Rules</CardTitle>
+          </CardHeader>
+          <RulesList>
+            <RuleItem>• Quiet hours: 10 PM - 6 AM</RuleItem>
+            <RuleItem>• No outside visitors after 9 PM</RuleItem>
+            <RuleItem>• Keep common areas clean</RuleItem>
+            <RuleItem>• Report maintenance issues promptly</RuleItem>
+          </RulesList>
+        </StatCard>
+      </StatsGrid>
 
       {/* Complaints */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">My Complaints</h3>
+      <ComplaintsContainer>
+        <ComplaintsTitle>My Complaints</ComplaintsTitle>
         
         {complaints.length === 0 ? (
-          <div className="text-center py-12">
-            <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 mb-2">No complaints submitted</h4>
-            <p className="text-gray-600">Submit your first maintenance request to get started</p>
-          </div>
+          <EmptyState>
+            <EmptyIcon />
+            <EmptyTitle>No complaints submitted</EmptyTitle>
+            <EmptyText>Submit your first maintenance request to get started</EmptyText>
+          </EmptyState>
         ) : (
-          <div className="space-y-4">
+          <ComplaintsList>
             {complaints.map(complaint => (
-              <div key={complaint.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      {getStatusIcon(complaint.status)}
-                      <h4 className="text-lg font-medium text-gray-900">{complaint.title}</h4>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(complaint.priority)}`}>
+              <ComplaintItem key={complaint.id}>
+                <ComplaintHeader>
+                  <ComplaintInfo>
+                    <ComplaintTitleRow>
+                      <StatusIcon>
+                        {getStatusIcon(complaint.status)}
+                      </StatusIcon>
+                      <ComplaintTitle>{complaint.title}</ComplaintTitle>
+                      <PriorityBadge color={getPriorityColor(complaint.priority)}>
                         {complaint.priority} priority
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-3">{complaint.description}</p>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      </PriorityBadge>
+                    </ComplaintTitleRow>
+                    <ComplaintDescription>{complaint.description}</ComplaintDescription>
+                    <ComplaintDetails>
                       <span>Category: {complaint.category}</span>
                       <span>Created: {new Date(complaint.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                      complaint.status === 'resolved' 
-                        ? 'bg-green-100 text-green-800'
-                        : complaint.status === 'in_progress'
-                        ? 'bg-orange-100 text-orange-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {complaint.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                    </ComplaintDetails>
+                  </ComplaintInfo>
+                  <StatusBadge status={complaint.status}>
+                    {complaint.status.replace('_', ' ')}
+                  </StatusBadge>
+                </ComplaintHeader>
+              </ComplaintItem>
             ))}
-          </div>
+          </ComplaintsList>
         )}
-      </div>
+      </ComplaintsContainer>
 
       {/* Complaint Form Modal */}
       {showComplaintForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full">
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">Submit Complaint</h3>
-                <button
-                  onClick={() => setShowComplaintForm(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+        <ModalOverlay>
+          <ModalContent>
+            <ModalHeader>
+              <ModalTitle>
+                <ModalTitleText>Submit Complaint</ModalTitleText>
+                <CloseButton onClick={() => setShowComplaintForm(false)}>
                   ✕
-                </button>
-              </div>
-            </div>
+                </CloseButton>
+              </ModalTitle>
+            </ModalHeader>
             
-            <form onSubmit={handleSubmit(onSubmitComplaint)} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                <input
+            <ModalForm onSubmit={handleSubmit(onSubmitComplaint)}>
+              <FormGroup>
+                <FormLabel>Title</FormLabel>
+                <FormInput
                   type="text"
                   {...register('title', { required: 'Title is required' })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="Brief description of the issue"
                 />
                 {errors.title && (
-                  <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+                  <ErrorMessage>{errors.title.message}</ErrorMessage>
                 )}
-              </div>
+              </FormGroup>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select
+              <FormGroup>
+                <FormLabel>Category</FormLabel>
+                <FormSelect
                   {...register('category', { required: 'Category is required' })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 >
                   <option value="">Select category</option>
                   {categories.map(category => (
@@ -225,45 +751,39 @@ const Hostel: React.FC = () => {
                       {category.label}
                     </option>
                   ))}
-                </select>
+                </FormSelect>
                 {errors.category && (
-                  <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+                  <ErrorMessage>{errors.category.message}</ErrorMessage>
                 )}
-              </div>
+              </FormGroup>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
+              <FormGroup>
+                <FormLabel>Description</FormLabel>
+                <FormTextarea
                   {...register('description', { required: 'Description is required' })}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="Detailed description of the issue"
                 />
                 {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                  <ErrorMessage>{errors.description.message}</ErrorMessage>
                 )}
-              </div>
+              </FormGroup>
 
-              <div className="flex space-x-3 pt-4">
-                <button
+              <FormButtons>
+                <CancelButton
                   type="button"
                   onClick={() => setShowComplaintForm(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-3 rounded-lg font-medium hover:from-emerald-600 hover:to-emerald-700 transition-all"
-                >
+                </CancelButton>
+                <SubmitFormButton type="submit">
                   Submit
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+                </SubmitFormButton>
+              </FormButtons>
+            </ModalForm>
+          </ModalContent>
+        </ModalOverlay>
       )}
-    </div>
+    </HostelContainer>
   );
 };
 

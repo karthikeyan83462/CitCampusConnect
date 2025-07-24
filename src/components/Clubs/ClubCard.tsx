@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Crown, Clock, Eye } from 'lucide-react';
 import type { Database } from '../../lib/supabase';
+import styled from 'styled-components';
 
 type Club = Database['public']['Tables']['clubs']['Row'];
 
@@ -14,6 +15,150 @@ interface ClubCardProps {
   userId?: string;
   isMember?: boolean;
 }
+
+const CardContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+`;
+
+const CategoryBadge = styled.span`
+  display: inline-block;
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-top: 0.5rem;
+  font-weight: 500;
+`;
+
+const MemberCount = styled.div`
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+`;
+
+const MemberIcon = styled(Users)`
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+`;
+
+const CardDescription = styled.p`
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const Button = styled.button<{ variant: 'primary' | 'secondary' | 'success' | 'warning' | 'disabled' }>`
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  ${props => {
+    switch (props.variant) {
+      case 'primary':
+        return `
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          color: white;
+          &:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+          }
+        `;
+      case 'secondary':
+        return `
+          background-color: #f3f4f6;
+          color: #374151;
+          &:hover {
+            background-color: #e5e7eb;
+          }
+        `;
+      case 'success':
+        return `
+          background-color: #dcfce7;
+          color: #166534;
+          &:hover {
+            background-color: #bbf7d0;
+          }
+        `;
+      case 'warning':
+        return `
+          background-color: #fef3c7;
+          color: #92400e;
+          cursor: not-allowed;
+        `;
+      case 'disabled':
+        return `
+          background-color: #f3f4f6;
+          color: #9ca3af;
+          cursor: not-allowed;
+        `;
+      default:
+        return '';
+    }
+  }}
+`;
+
+const ButtonIcon = styled.span`
+  display: flex;
+  align-items: center;
+`;
+
+const CrownIcon = styled(Crown)`
+  width: 1rem;
+  height: 1rem;
+`;
+
+const EyeIcon = styled(Eye)`
+  width: 1rem;
+  height: 1rem;
+`;
+
+const ClockIcon = styled(Clock)`
+  width: 1rem;
+  height: 1rem;
+`;
 
 const ClubCard: React.FC<ClubCardProps> = ({
   club,
@@ -31,103 +176,96 @@ const ClubCard: React.FC<ClubCardProps> = ({
     onJoin?.(club.id);
   };
 
-  const canManage =
-    (userRole === 'club_head') || userRole === 'secretary';
+  const canManage = (userRole === 'club_head') || userRole === 'secretary';
 
   const renderButtons = () => {
     // Manage + View buttons for club head or secretary
     if (canManage) {
       return (
-        <div className="flex gap-2">
-          <button
-            onClick={() => onManage?.(club.id)}
-            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all"
-          >
-            <Crown className="w-4 h-4 inline mr-2" />
-            Manage Club
-          </button>
-          <button
-            onClick={() => onView?.(club.id)}
-            className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
-          >
-            <Eye className="w-4 h-4 inline mr-2" />
-            View Club
-          </button>
-        </div>
+        <ButtonContainer>
+          <Button variant="primary" onClick={() => onManage?.(club.id)}>
+            <ButtonIcon>
+              <CrownIcon />
+            </ButtonIcon>
+            Manage
+          </Button>
+          <Button variant="secondary" onClick={() => onView?.(club.id)}>
+            <ButtonIcon>
+              <EyeIcon />
+            </ButtonIcon>
+            View
+          </Button>
+        </ButtonContainer>
       );
     }
 
     // Approved members get View button
     if (isMember && membershipStatus === 'approved') {
       return (
-        <button
-          onClick={() => onView?.(club.id)}
-          className="w-full bg-green-100 text-green-800 py-2 px-4 rounded-lg font-medium hover:bg-green-200 transition-all"
-        >
-          <Eye className="w-4 h-4 inline mr-2" />
-          View Club
-        </button>
+        <ButtonContainer>
+          <Button variant="success" onClick={() => onView?.(club.id)}>
+            <ButtonIcon>
+              <EyeIcon />
+            </ButtonIcon>
+            View Club
+          </Button>
+        </ButtonContainer>
       );
     }
 
     // Pending state or join already clicked
     if ((isMember && membershipStatus === 'pending') || joinClicked) {
       return (
-        <div className="flex gap-2">
-          <button className="w-full bg-yellow-100 text-yellow-800 py-2 px-4 rounded-lg font-medium cursor-not-allowed">
-            <Clock className="w-4 h-4 inline mr-2" />
-            Pending Approval
-          </button>
-          <button
-            onClick={() => onView?.(club.id)}
-            className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
-          >
-            <Eye className="w-4 h-4 inline mr-2" />
-            View Club
-          </button>
-        </div>
+        <ButtonContainer>
+          <Button variant="warning">
+            <ButtonIcon>
+              <ClockIcon />
+            </ButtonIcon>
+            Pending
+          </Button>
+          <Button variant="secondary" onClick={() => onView?.(club.id)}>
+            <ButtonIcon>
+              <EyeIcon />
+            </ButtonIcon>
+            View
+          </Button>
+        </ButtonContainer>
       );
     }
 
     // Default (non-members): Join + View
     return (
-      <div className="flex gap-2">
-        <button
-          onClick={handleJoin}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
-        >
+      <ButtonContainer>
+        <Button variant="primary" onClick={handleJoin}>
           Join Club
-        </button>
-        <button
-          onClick={() => onView?.(club.id)}
-          className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
-        >
-          <Eye className="w-4 h-4 inline mr-2" />
-          View Club
-        </button>
-      </div>
+        </Button>
+        <Button variant="secondary" onClick={() => onView?.(club.id)}>
+          <ButtonIcon>
+            <EyeIcon />
+          </ButtonIcon>
+          View
+        </Button>
+      </ButtonContainer>
     );
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
-      <div className="flex items-start justify-between mb-4">
+    <CardContainer>
+      <CardHeader>
         <div>
-          <h3 className="text-xl font-bold text-gray-900">{club.name}</h3>
-          <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
-            {club.category}
-          </span>
+          <CardTitle>{club.name}</CardTitle>
+          <CategoryBadge>{club.category}</CategoryBadge>
         </div>
-        <div className="flex items-center text-gray-500">
-          <Users className="w-4 h-4 mr-1" />
-          <span className="text-sm">{club.member_count}</span>
-        </div>
-      </div>
+        <MemberCount>
+          <MemberIcon />
+          <span>{club.member_count || 0}</span>
+        </MemberCount>
+      </CardHeader>
 
-      <p className="text-gray-600 mb-6 line-clamp-3">{club.description}</p>
+      <CardDescription>{club.description}</CardDescription>
 
-      <div className="space-y-3">{renderButtons()}</div>
-    </div>
+      {renderButtons()}
+    </CardContainer>
   );
 };
 

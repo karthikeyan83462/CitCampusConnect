@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, MessageCircle, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '../../lib/supabase';
+import styled from 'styled-components';
 
 type MarketplaceItem = Database['public']['Tables']['marketplace_items']['Row'];
 
@@ -11,6 +12,194 @@ interface ProductCardProps {
   onWishlistToggle?: (itemId: string) => void;
   onContact?: (sellerId: string) => void;
 }
+
+const CardContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+  height: 12rem;
+  background: linear-gradient(135deg, #a78bfa, #ec4899);
+
+  @media (min-width: 640px) {
+    height: 14rem;
+  }
+`;
+
+const ProductImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const PlaceholderImage = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #a78bfa, #ec4899);
+`;
+
+const PlaceholderText = styled.div`
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+
+  @media (min-width: 640px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const WishlistButton = styled.button`
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const WishlistIcon = styled(Heart)<{ isWishlisted: boolean }>`
+  width: 1.25rem;
+  height: 1.25rem;
+  color: ${props => props.isWishlisted ? '#ef4444' : '#94a3b8'};
+
+  ${props => props.isWishlisted && `
+    fill: currentColor;
+  `}
+`;
+
+const ConditionBadge = styled.span<{ color: string }>`
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: ${props => props.color.split(' ')[0]};
+  color: ${props => props.color.split(' ')[1]};
+`;
+
+const CardContent = styled.div`
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const PriceContainer = styled.div`
+  text-align: right;
+  flex-shrink: 0;
+`;
+
+const Price = styled.p`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+`;
+
+const CardDescription = styled.p`
+  color: #64748b;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const CardFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+`;
+
+const CategoryBadge = styled.span`
+  background-color: #f3e8ff;
+  color: #7c3aed;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+`;
+
+const TimeInfo = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+const TimeIcon = styled(MapPin)`
+  width: 0.75rem;
+  height: 0.75rem;
+`;
+
+const ContactButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  
+  &:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  }
+`;
+
+const ButtonIcon = styled(MessageCircle)`
+  width: 1rem;
+  height: 1rem;
+`;
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
   item, 
@@ -36,67 +225,54 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
-      <div className="relative h-48 bg-gradient-to-br from-purple-400 to-pink-500">
+    <CardContainer>
+      <ImageContainer>
         {item.images?.[0] ? (
-          <img 
+          <ProductImage 
             src={item.images[0]} 
             alt={item.title}
-            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-white text-3xl font-bold">
+          <PlaceholderImage>
+            <PlaceholderText>
               {item.title.charAt(0)}
-            </div>
-          </div>
+            </PlaceholderText>
+          </PlaceholderImage>
         )}
         
-        <button
-          onClick={() => onWishlistToggle?.(item.id)}
-          className="absolute top-3 right-3 p-2 rounded-full bg-white shadow-lg hover:shadow-xl transition-all"
-        >
-          <Heart 
-            className={`w-5 h-5 ${isWishlisted ? 'text-red-500 fill-current' : 'text-gray-400'}`} 
-          />
-        </button>
+        <WishlistButton onClick={() => onWishlistToggle?.(item.id)}>
+          <WishlistIcon isWishlisted={isWishlisted || false} />
+        </WishlistButton>
         
-        <div className="absolute bottom-3 left-3">
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getConditionColor(item.condition)}`}>
-            {item.condition.replace('_', ' ')}
-          </span>
-        </div>
-      </div>
+        <ConditionBadge color={getConditionColor(item.condition)}>
+          {item.condition.replace('_', ' ')}
+        </ConditionBadge>
+      </ImageContainer>
       
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900 line-clamp-2">{item.title}</h3>
-          <div className="text-right ml-4">
-            <p className="text-2xl font-bold text-gray-900">₹{item.price}</p>
-          </div>
-        </div>
+      <CardContent>
+        <CardHeader>
+          <CardTitle>{item.title}</CardTitle>
+          <PriceContainer>
+            <Price>₹{item.price}</Price>
+          </PriceContainer>
+        </CardHeader>
         
-        <p className="text-gray-600 mb-4 text-sm line-clamp-2">{item.description}</p>
+        <CardDescription>{item.description}</CardDescription>
         
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-          <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
-            {item.category}
-          </span>
-          <span className="flex items-center">
-            <MapPin className="w-3 h-3 mr-1" />
+        <CardFooter>
+          <CategoryBadge>{item.category}</CategoryBadge>
+          <TimeInfo>
+            <TimeIcon />
             {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-          </span>
-        </div>
+          </TimeInfo>
+        </CardFooter>
         
-        <button
-          onClick={() => onContact?.(item.seller_id)}
-          className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center space-x-2"
-        >
-          <MessageCircle className="w-4 h-4" />
+        <ContactButton onClick={() => onContact?.(item.seller_id)}>
+          <ButtonIcon />
           <span>Contact Seller</span>
-        </button>
-      </div>
-    </div>
+        </ContactButton>
+      </CardContent>
+    </CardContainer>
   );
 };
 

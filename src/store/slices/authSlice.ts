@@ -12,7 +12,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  loading: true, // Changed to true by default
+  loading: false, // Set to false by default
   error: null,
 };
 
@@ -123,6 +123,11 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    clearUser: (state) => {
+      state.user = null;
+      state.loading = false;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -136,7 +141,7 @@ const authSlice = createSlice({
       })
       .addCase(checkSession.rejected, (state) => {
         state.loading = false;
-        state.user = null;
+        // Don't clear user state on session check failure
       })
       .addCase(signIn.pending, (state) => {
         state.loading = true;
@@ -162,23 +167,34 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Sign up failed';
       })
+      .addCase(signOut.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(signOut.fulfilled, (state) => {
         state.user = null;
         state.loading = false;
       })
-      .addCase(getCurrentUser.pending, (state) => {
+      .addCase(signOut.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.error.message || 'Sign out failed';
       })
-      .addCase(getCurrentUser.fulfilled, (state, action: PayloadAction<Profile>) => {
+      .addCase(getCurrentUser.pending, (state) => {
+        // Don't change loading state here
+      })
+      .addCase(getCurrentUser.fulfilled, (state, action: PayloadAction<Profile | null>) => {
         state.loading = false;
-        state.user = action.payload;
+        // Only update user if we got a valid profile
+        if (action.payload) {
+          state.user = action.payload;
+        }
       })
       .addCase(getCurrentUser.rejected, (state) => {
         state.loading = false;
-        state.user = null;
+        // Don't clear user state on rejection
       });
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, clearUser } = authSlice.actions;
 export default authSlice.reducer;
