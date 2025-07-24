@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { signOut, clearUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggle from './ThemeToggle';
@@ -46,6 +46,10 @@ const MenuButton = styled.button`
   border: none;
   background: none;
   cursor: pointer;
+  
+  @media (min-width: 769px) {
+    display: none;
+  }
   
   &:hover {
     background-color: ${props => props.theme.isDark ? '#334155' : '#f1f5f9'};
@@ -99,52 +103,38 @@ const UserAvatar = styled.div`
 const UserDetails = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
 `;
 
-const UserName = styled.span`
-  font-weight: 600;
+const UserName = styled.p`
   color: ${props => props.theme.colors.text};
+  font-weight: 600;
   font-size: 0.875rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-const UserRole = styled.span`
+const UserRole = styled.p`
   color: ${props => props.theme.colors.textSecondary};
   font-size: 0.75rem;
+  margin: 0;
+  text-transform: capitalize;
 `;
 
 const SignOutButton = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #dc2626;
-  }
-`;
-
-const MobileMenuButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   color: ${props => props.theme.colors.textSecondary};
   border-radius: 0.5rem;
   border: none;
   background: none;
   cursor: pointer;
-  
-  @media (min-width: 641px) {
-    display: none;
-  }
+  font-size: 0.875rem;
+  font-weight: 500;
   
   &:hover {
     background-color: ${props => props.theme.isDark ? '#334155' : '#f1f5f9'};
@@ -152,72 +142,53 @@ const MobileMenuButton = styled.button`
   }
 `;
 
-const MenuIcon = styled(Menu)`
-  width: 1.25rem;
-  height: 1.25rem;
-`;
-
-const XIcon = styled(X)`
-  width: 1.25rem;
-  height: 1.25rem;
-`;
-
-const LogOutIcon = styled(LogOut)`
-  width: 1rem;
-  height: 1rem;
-`;
-
-const SignOutText = styled.span`
-  display: none;
-  
-  @media (min-width: 640px) {
-    display: inline;
-  }
-`;
-
-const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen, toggleSidebar }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  isSidebarOpen, 
+  toggleSidebar
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { isDark } = useTheme();
 
   const handleSignOut = async () => {
     try {
-      // Try to dispatch the signOut action
       await dispatch(signOut()).unwrap();
-      // Navigate to auth page after successful sign out
+      dispatch(clearUser());
       navigate('/auth');
     } catch (error) {
-      console.error('Sign out error:', error);
-      // If sign out fails (e.g., no Supabase connection), clear user state manually
-      dispatch(clearUser());
-      // Navigate to auth page
-      navigate('/auth');
+      console.error('Sign out failed:', error);
     }
   };
 
   return (
     <NavbarContainer>
       <LeftSection>
-        <MobileMenuButton onClick={toggleSidebar} aria-label="Toggle sidebar">
-          {isSidebarOpen ? <XIcon /> : <MenuIcon />}
-        </MobileMenuButton>
+        <MenuButton onClick={toggleSidebar}>
+          <Menu size={20} />
+        </MenuButton>
+        
         <LogoLink to="/dashboard">
-          CampusConnect
+          Campus Connect
         </LogoLink>
       </LeftSection>
-      
+
       <RightSection>
         <ThemeToggle />
+        
         <UserInfo>
-          <UserAvatar>{user?.full_name?.charAt(0)}</UserAvatar>
+          <UserAvatar>
+            {user?.full_name?.charAt(0) || 'U'}
+          </UserAvatar>
           <UserDetails>
-            <UserName title={user?.full_name}>{user?.full_name}</UserName>
-            <UserRole title={user?.role?.replace('_', ' ')}>{user?.role?.replace('_', ' ')}</UserRole>
+            <UserName>{user?.full_name || 'User'}</UserName>
+            <UserRole>{user?.role || 'student'}</UserRole>
           </UserDetails>
         </UserInfo>
+        
         <SignOutButton onClick={handleSignOut}>
-          <LogOutIcon />
-          <SignOutText>Sign Out</SignOutText>
+          <LogOut size={16} />
+          <span>Sign Out</span>
         </SignOutButton>
       </RightSection>
     </NavbarContainer>

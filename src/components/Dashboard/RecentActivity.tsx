@@ -13,16 +13,17 @@ interface ActivityItem {
 }
 
 const ActivityContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 0.75rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ActivityTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 1.5rem;
 `;
 
@@ -39,9 +40,10 @@ const ActivityItem = styled.div`
   padding: 1rem;
   border-radius: 0.5rem;
   transition: background-color 0.3s;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#f9fafb'};
   
   &:hover {
-    background-color: #f9fafb;
+    background-color: ${props => props.theme.isDark ? '#475569' : '#f3f4f6'};
   }
 `;
 
@@ -64,7 +66,7 @@ const ActivityHeader = styled.div`
 const ActivityTitleText = styled.p`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: ${props => props.theme.colors.text};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -85,7 +87,7 @@ const StatusBadge = styled.span<{ status: string }>`
       case 'urgent':
         return '#fee2e2';
       default:
-        return '#f3f4f6';
+        return props.theme.isDark ? '#475569' : '#f3f4f6';
     }
   }};
   color: ${props => {
@@ -98,20 +100,20 @@ const StatusBadge = styled.span<{ status: string }>`
       case 'urgent':
         return '#991b1b';
       default:
-        return '#374151';
+        return props.theme.colors.text;
     }
   }};
 `;
 
 const ActivityDescription = styled.p`
   font-size: 0.875rem;
-  color: #4b5563;
+  color: ${props => props.theme.colors.textSecondary};
   margin-top: 0.25rem;
 `;
 
 const ActivityTime = styled.p`
   font-size: 0.75rem;
-  color: #6b7280;
+  color: ${props => props.theme.colors.textSecondary};
   margin-top: 0.5rem;
   display: flex;
   align-items: center;

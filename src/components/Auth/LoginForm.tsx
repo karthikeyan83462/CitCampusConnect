@@ -21,12 +21,13 @@ const spin = keyframes`
 `;
 
 const FormContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   padding: 2rem;
   width: 100%;
   max-width: 28rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const FormHeader = styled.div`
@@ -37,12 +38,12 @@ const FormHeader = styled.div`
 const FormTitle = styled.h2`
   font-size: 1.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 0.5rem 0;
 `;
 
 const FormSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
   margin: 0;
 `;
@@ -59,7 +60,7 @@ const FormLabel = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
 `;
 
@@ -72,7 +73,7 @@ const InputIcon = styled.div`
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: ${props => props.theme.colors.textSecondary};
   width: 1.25rem;
   height: 1.25rem;
   pointer-events: none;
@@ -81,10 +82,11 @@ const InputIcon = styled.div`
 const FormInput = styled.input`
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 2.75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -93,7 +95,7 @@ const FormInput = styled.input`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 

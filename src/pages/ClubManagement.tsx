@@ -92,7 +92,7 @@ const HeaderTitle = styled.h1`
 `;
 
 const HeaderSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0.5rem 0 0 0;
   font-size: 1.125rem;
 `;
@@ -136,28 +136,30 @@ const ButtonIcon = styled(PlusCircle)`
 `;
 
 const ClubSelectorContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const SelectLabel = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
 `;
 
 const ClubSelect = styled.select`
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -169,15 +171,16 @@ const ClubSelect = styled.select`
 `;
 
 const TabContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const TabHeader = styled.div`
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
 `;
 
 const TabButton = styled.button<{ isActive: boolean }>`

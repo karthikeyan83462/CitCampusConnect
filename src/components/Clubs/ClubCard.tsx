@@ -17,13 +17,14 @@ interface ClubCardProps {
 }
 
 const CardContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   height: 100%;
   display: flex;
   flex-direction: column;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const CardHeader = styled.div`
@@ -36,7 +37,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.4;
 `;
@@ -55,7 +56,7 @@ const CategoryBadge = styled.span`
 const MemberCount = styled.div`
   display: flex;
   align-items: center;
-  color: #6b7280;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
 `;
 
@@ -66,7 +67,7 @@ const MemberIcon = styled(Users)`
 `;
 
 const CardDescription = styled.p`
-  color: #4b5563;
+  color: ${props => props.theme.colors.textSecondary};
   margin-bottom: 1.5rem;
   line-height: 1.6;
   flex-grow: 1;

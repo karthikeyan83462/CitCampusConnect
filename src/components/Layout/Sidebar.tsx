@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, LayoutDashboard, Users, Utensils, Home, ShoppingBag, Settings } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RootState } from '../../store/store';
@@ -11,19 +11,24 @@ interface SidebarProps {
   toggleSidebar: () => void;
 }
 
-const SidebarContainer = styled.div<{ isOpen: boolean }>`
+const SidebarContainer = styled.div<{ isOpen: boolean; isHovered: boolean }>`
   position: fixed;
-  top: 0;
+  top: 4rem; /* Below header */
   left: 0;
-  height: 100vh;
-  width: 16rem;
+  height: calc(100vh - 4rem); /* Full height minus header */
+  width: ${props => props.isHovered ? '16rem' : '4rem'};
   background-color: ${props => props.theme.isDark ? '#1e293b' : 'white'};
   z-index: 50;
   display: flex;
   flex-direction: column;
   border-right: 1px solid ${props => props.theme.colors.border};
+  transition: width 0.15s ease; /* Faster transition */
+  overflow: hidden; /* Prevent content overflow */
   
   @media (max-width: 768px) {
+    top: 0; /* Full height on mobile */
+    height: 100vh;
+    width: 16rem;
     transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
   }
   
@@ -32,19 +37,17 @@ const SidebarContainer = styled.div<{ isOpen: boolean }>`
   }
 `;
 
-const SidebarHeader = styled.div`
-  padding: 1.5rem;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const SidebarTitle = styled.h2`
-  color: ${props => props.theme.colors.text};
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
+const SidebarHeader = styled.div<{ isHovered: boolean }>`
+  display: none; /* Hide header on desktop */
+  
+  @media (max-width: 768px) {
+    display: flex;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid ${props => props.theme.colors.border};
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 3.5rem;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -70,27 +73,36 @@ const CloseButton = styled.button`
 
 const SidebarContent = styled.div`
   flex: 1;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 `;
 
 const MenuList = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Gap between menu items */
 `;
 
 const MenuItem = styled.li`
   margin: 0;
 `;
 
-const MenuLink = styled(Link)<{ isActive: boolean }>`
+const MenuLink = styled(Link)<{ isActive: boolean; isHovered: boolean }>`
   display: flex;
   align-items: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.5rem; /* Fixed padding */
   color: ${props => props.isActive ? props.theme.colors.text : props.theme.colors.textSecondary};
   text-decoration: none;
   font-weight: 500;
+  justify-content: flex-start; /* Always left-aligned to keep icons in place */
+  transition: all 0.15s ease; /* Faster transition */
+  white-space: nowrap; /* Prevent text wrapping */
+  width: 100%; /* Ensure full width for centering */
+  position: relative; /* For absolute positioning of icons */
   
   ${props => props.isActive && `
     background-color: ${props.theme.isDark ? '#3b82f6' : '#f1f5f9'};
@@ -102,14 +114,13 @@ const MenuLink = styled(Link)<{ isActive: boolean }>`
   }
 `;
 
-const MenuIcon = styled.div<{ isActive: boolean }>`
+const MenuIcon = styled.div<{ isActive: boolean; isHovered: boolean }>`
   width: 1.25rem;
   height: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 0.75rem;
-  
+
   ${props => props.isActive ? `
     color: ${props.theme.colors.text};
   ` : `
@@ -121,27 +132,39 @@ const MenuIcon = styled.div<{ isActive: boolean }>`
   `}
 `;
 
-const MenuText = styled.span`
+const MenuText = styled.span<{ isHovered: boolean }>`
   font-size: 0.875rem;
+  opacity: ${props => props.isHovered ? '1' : '0'}; /* Hidden on desktop when collapsed */
+  transition: opacity 0.15s ease; /* Faster transition */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow text */
+  margin-left: 1.5rem;
+  
+  @media (max-width: 768px) {
+    opacity: 1; /* Always visible on mobile */
+  }
 `;
 
-const SidebarFooter = styled.div`
-  padding: 1rem 1.5rem;
+const SidebarFooter = styled.div<{ isHovered: boolean }>`
+  padding: ${props => props.isHovered ? '1rem 1.5rem' : '1rem 0.5rem'};
   border-top: 1px solid ${props => props.theme.colors.border};
+  min-height: 4rem; /* Fixed height to prevent movement */
 `;
 
-const UserSection = styled.div`
+const UserSection = styled.div<{ isHovered: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: ${props => props.isHovered ? '0.75rem' : '0'};
+  padding: ${props => props.isHovered ? '0.75rem' : '0.75rem 0'};
   background-color: ${props => props.theme.isDark ? '#334155' : '#f8fafc'};
   border-radius: 0.5rem;
+  justify-content: center; /* Always center the avatar */
+  transition: gap 0.15s ease; /* Faster transition */
 `;
 
-const UserAvatar = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
+const UserAvatar = styled.div<{ isHovered: boolean }>`
+  width: ${props => props.isHovered ? '2.5rem' : '2rem'};
+  height: ${props => props.isHovered ? '2.5rem' : '2rem'};
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   display: flex;
@@ -149,12 +172,18 @@ const UserAvatar = styled.div`
   justify-content: center;
   color: white;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: ${props => props.isHovered ? '1rem' : '0.875rem'};
+  flex-shrink: 0;
+  transition: width 0.15s ease, height 0.15s ease, font-size 0.15s ease;
 `;
 
-const UserInfo = styled.div`
+const UserInfo = styled.div<{ isHovered: boolean }>`
   flex: 1;
   min-width: 0;
+  opacity: ${props => props.isHovered ? '1' : '0'};
+  transition: opacity 0.15s ease; /* Faster transition */
+  overflow: hidden; /* Hide overflow content */
+  display: ${props => props.isHovered ? 'block' : 'none'}; /* Hide completely when collapsed */
 `;
 
 const UserName = styled.p`
@@ -174,25 +203,45 @@ const UserRole = styled.p`
   text-transform: capitalize;
 `;
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isOpen, 
+  toggleSidebar
+}) => {
   const location = useLocation();
   const { user } = useSelector((state: RootState) => state.auth);
   const { isDark } = useTheme();
+  const [isHovered, setIsHovered] = useState(false);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { name: 'Clubs', path: '/clubs', icon: '👥' },
-    { name: 'Canteen', path: '/canteen', icon: '🍽️' },
-    { name: 'Hostel', path: '/hostel', icon: '🏠' },
-    { name: 'Marketplace', path: '/marketplace', icon: '🛍️' },
-    { name: 'Settings', path: '/settings', icon: '⚙️' },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Clubs', path: '/clubs', icon: Users },
+    { name: 'Canteen', path: '/canteen', icon: Utensils },
+    { name: 'Hostel', path: '/hostel', icon: Home },
+    { name: 'Marketplace', path: '/marketplace', icon: ShoppingBag },
+    { name: 'Settings', path: '/settings', icon: Settings },
   ];
+
+  const handleMouseEnter = () => {
+    if (window.innerWidth > 768) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (window.innerWidth > 768) {
+      setIsHovered(false);
+    }
+  };
 
   return (
     <>
-      <SidebarContainer isOpen={isOpen}>
-        <SidebarHeader>
-          <SidebarTitle>Dashboard</SidebarTitle>
+      <SidebarContainer 
+        isOpen={isOpen} 
+        isHovered={isHovered}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <SidebarHeader isHovered={isHovered}>
           <CloseButton onClick={toggleSidebar}>
             <X />
           </CloseButton>
@@ -202,13 +251,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <MenuList>
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <MenuItem key={item.path}>
-                  <MenuLink to={item.path} isActive={isActive}>
-                    <MenuIcon isActive={isActive}>
-                      {item.icon}
+                  <MenuLink to={item.path} isActive={isActive} isHovered={isHovered}>
+                    <MenuIcon isActive={isActive} isHovered={isHovered}>
+                      <IconComponent size={20} />
                     </MenuIcon>
-                    <MenuText>{item.name}</MenuText>
+                    <MenuText isHovered={isHovered}>{item.name}</MenuText>
                   </MenuLink>
                 </MenuItem>
               );
@@ -216,10 +266,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </MenuList>
         </SidebarContent>
 
-        <SidebarFooter>
-          <UserSection>
-            <UserAvatar>{user?.full_name?.charAt(0)}</UserAvatar>
-            <UserInfo>
+        <SidebarFooter isHovered={isHovered}>
+          <UserSection isHovered={isHovered}>
+            <UserAvatar isHovered={isHovered}>{user?.full_name?.charAt(0)}</UserAvatar>
+            <UserInfo isHovered={isHovered}>
               <UserName>{user?.full_name}</UserName>
               <UserRole>{user?.role}</UserRole>
             </UserInfo>

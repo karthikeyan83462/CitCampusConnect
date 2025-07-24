@@ -14,13 +14,14 @@ interface ProductCardProps {
 }
 
 const CardContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   height: 100%;
   display: flex;
   flex-direction: column;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ImageContainer = styled.div`
@@ -64,7 +65,7 @@ const WishlistButton = styled.button`
   right: 0.75rem;
   padding: 0.5rem;
   border-radius: 50%;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
@@ -77,7 +78,7 @@ const WishlistButton = styled.button`
 const WishlistIcon = styled(Heart)<{ isWishlisted: boolean }>`
   width: 1.25rem;
   height: 1.25rem;
-  color: ${props => props.isWishlisted ? '#ef4444' : '#94a3b8'};
+  color: ${props => props.isWishlisted ? '#ef4444' : props.theme.colors.textSecondary};
 
   ${props => props.isWishlisted && `
     fill: currentColor;
@@ -114,7 +115,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.4;
   flex: 1;
@@ -132,12 +133,12 @@ const PriceContainer = styled.div`
 const Price = styled.p`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
 const CardDescription = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin-bottom: 1rem;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -153,7 +154,7 @@ const CardFooter = styled.div`
   justify-content: space-between;
   margin-bottom: 1rem;
   font-size: 0.75rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const CategoryBadge = styled.span`

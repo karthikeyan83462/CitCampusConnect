@@ -47,19 +47,38 @@ const LayoutContainer = styled.div`
   flex-direction: column;
 `;
 
+const HeaderSection = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: ${props => props.theme.colors.surface};
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+`;
+
+const ContentSection = styled.div`
+  display: flex;
+  flex: 1;
+  margin-top: 4rem; /* Height of navbar */
+`;
+
 const MainContent = styled.div`
   flex: 1;
   padding: 1rem;
-  margin-top: 4.5rem;
-  margin-left: 0;
+  margin-left: 4rem; /* Always collapsed in desktop */
+  transition: margin-left 0.15s ease; /* Faster transition */
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+    margin-top: 0;
+  }
   
   @media (min-width: 640px) {
-    margin-top: 5rem;
     padding: 1.25rem;
   }
   
   @media (min-width: 1024px) {
-    margin-left: 16rem;
     padding: 1.5rem;
   }
   
@@ -69,13 +88,13 @@ const MainContent = styled.div`
 `;
 
 const Main = styled.main`
-  min-height: calc(100vh - 5.5rem);
+  min-height: calc(100vh - 5rem);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   
   @media (min-width: 640px) {
-    min-height: calc(100vh - 6rem);
+    min-height: calc(100vh - 5.5rem);
   }
 `;
 
@@ -87,14 +106,25 @@ const Layout: React.FC = () => {
 
   return (
     <LayoutContainer>
-      <Navbar isSidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderSection>
+        <Navbar 
+          isSidebarOpen={sidebarOpen} 
+          toggleSidebar={toggleSidebar}
+        />
+      </HeaderSection>
 
-      <MainContent>
-        <Main>
-          <Outlet />
-        </Main>
-      </MainContent>
+      <ContentSection>
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          toggleSidebar={toggleSidebar}
+        />
+
+        <MainContent>
+          <Main>
+            <Outlet />
+          </Main>
+        </MainContent>
+      </ContentSection>
 
       <Toaster 
         position="top-right"

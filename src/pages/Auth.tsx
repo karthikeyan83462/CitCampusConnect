@@ -5,7 +5,9 @@ import styled from 'styled-components';
 
 const AuthContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #eff6ff, #faf5ff);
+  background: ${props => props.theme.isDark 
+    ? 'linear-gradient(to bottom right, #0f172a, #1e293b)' 
+    : 'linear-gradient(to bottom right, #eff6ff, #faf5ff)'};
   display: flex;
   align-items: center;
   justify-content: center;

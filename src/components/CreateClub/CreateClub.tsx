@@ -10,30 +10,48 @@ interface CreateClubProps {
   onSuccess?: () => void;
 }
 
-const CreateClubContainer = styled.div`
-  background-color: white;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-radius: 0.5rem;
+const Container = styled.div`
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+const Title = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0 0 1.5rem 0;
+`;
+
+const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
 `;
 
-const CreateClubTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 0.5rem 0;
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const FormLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${props => props.theme.colors.text};
 `;
 
 const FormInput = styled.input`
   width: 100%;
-  border: 1px solid #d1d5db;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -42,20 +60,21 @@ const FormInput = styled.input`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FormTextarea = styled.textarea`
   width: 100%;
-  border: 1px solid #d1d5db;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   resize: vertical;
   min-height: 6rem;
-  font-family: inherit;
   
   &:focus {
     outline: none;
@@ -64,18 +83,19 @@ const FormTextarea = styled.textarea`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FormSelect = styled.select`
   width: 100%;
-  border: 1px solid #d1d5db;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -86,34 +106,24 @@ const FormSelect = styled.select`
   }
 `;
 
-const CreateButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background-color: #2563eb;
+const SubmitButton = styled.button`
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
-  padding: 0.5rem 1.5rem;
+  padding: 0.875rem 1rem;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   
-  &:hover:not(:disabled) {
-    background-color: #1d4ed8;
-    transform: translateY(-1px);
+  &:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
   }
   
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
   }
 `;
 
@@ -159,42 +169,53 @@ const CreateClub: React.FC<CreateClubProps> = ({ onSuccess }) => {
   };
 
   return (
-    <CreateClubContainer>
-      <CreateClubTitle>Create a New Club</CreateClubTitle>
+    <Container>
+      <Title>Create a New Club</Title>
 
-      <FormInput
-        type="text"
-        placeholder="Club Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <Form onSubmit={(e) => { e.preventDefault(); handleCreateClub(); }}>
+        <FormGroup>
+          <FormLabel>Club Name</FormLabel>
+          <FormInput
+            type="text"
+            placeholder="Club Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </FormGroup>
 
-      <FormTextarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+        <FormGroup>
+          <FormLabel>Description</FormLabel>
+          <FormTextarea
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+        </FormGroup>
 
-      <FormSelect
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
-        <option value="Academic">Academic</option>
-        <option value="Sports">Sports</option>
-        <option value="Cultural">Cultural</option>
-        <option value="Technical">Technical</option>
-        <option value="Social Service">Social Service</option>
-        <option value="Arts">Arts</option>
-      </FormSelect>
+        <FormGroup>
+          <FormLabel>Category</FormLabel>
+          <FormSelect
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          >
+            <option value="Academic">Academic</option>
+            <option value="Sports">Sports</option>
+            <option value="Cultural">Cultural</option>
+            <option value="Technical">Technical</option>
+            <option value="Social Service">Social Service</option>
+            <option value="Arts">Arts</option>
+          </FormSelect>
+        </FormGroup>
 
-      <CreateButton
-        onClick={handleCreateClub}
-        disabled={loading}
-      >
-        <ButtonIcon />
-        {loading ? 'Creating...' : 'Create Club'}
-      </CreateButton>
-    </CreateClubContainer>
+        <SubmitButton type="submit" disabled={loading}>
+          <ButtonIcon />
+          {loading ? 'Creating...' : 'Create Club'}
+        </SubmitButton>
+      </Form>
+    </Container>
   );
 };
 
