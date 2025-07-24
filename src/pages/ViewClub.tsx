@@ -12,10 +12,11 @@ const spin = keyframes`
 `;
 
 const ViewClubContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
   
   @media (min-width: 640px) {
     padding: 2rem;

@@ -24,7 +24,7 @@ const SettingsHeader = styled.div`
 const SettingsTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
@@ -34,14 +34,22 @@ const SettingsTitle = styled.h1`
 `;
 
 const SettingsCard = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
   
   @media (min-width: 640px) {
     padding: 2rem;
   }
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0 0 1rem 0;
 `;
 
 const Section = styled.section`
@@ -60,7 +68,7 @@ const SectionHeader = styled.div`
 `;
 
 const SectionIcon = styled.div`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   display: flex;
   align-items: center;
 `;
@@ -68,12 +76,12 @@ const SectionIcon = styled.div`
 const SectionTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   
   &:last-child {
     margin-bottom: 0;
@@ -84,18 +92,19 @@ const FormLabel = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
 `;
 
 const FormInput = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -104,18 +113,19 @@ const FormInput = styled.input`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FormSelect = styled.select`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -129,71 +139,67 @@ const FormSelect = styled.select`
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 `;
 
 const CheckboxItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 `;
 
-const CheckboxInput = styled.input`
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 0.25rem;
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:checked {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+`;
+
+const Checkbox = styled.input`
+  width: 1rem;
+  height: 1rem;
+  accent-color: #3b82f6;
 `;
 
 const CheckboxLabel = styled.label`
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
   cursor: pointer;
   flex: 1;
 `;
 
 const SaveButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.875rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   
   &:hover {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
   }
   
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
   }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
-const ButtonIcon = styled(Save)`
+const SaveIcon = styled(Save)`
   width: 1.25rem;
   height: 1.25rem;
 `;
@@ -286,7 +292,7 @@ const Settings: React.FC = () => {
           
           <CheckboxGroup>
             <CheckboxItem>
-              <CheckboxInput
+              <Checkbox
                 type="checkbox"
                 id="emailNotifications"
                 checked={settings.emailNotifications}
@@ -298,7 +304,7 @@ const Settings: React.FC = () => {
             </CheckboxItem>
             
             <CheckboxItem>
-              <CheckboxInput
+              <Checkbox
                 type="checkbox"
                 id="pushNotifications"
                 checked={settings.pushNotifications}
@@ -335,7 +341,7 @@ const Settings: React.FC = () => {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
           <SaveButton onClick={handleSaveChanges}>
-            <ButtonIcon />
+            <SaveIcon />
             Save Changes
           </SaveButton>
         </div>

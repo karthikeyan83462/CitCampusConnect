@@ -12,13 +12,14 @@ interface FoodItemCardProps {
 }
 
 const CardContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   height: 100%;
   display: flex;
   flex-direction: column;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ImageContainer = styled.div`
@@ -80,7 +81,7 @@ const ItemInfo = styled.div`
 const ItemName = styled.h3`
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
 `;
@@ -103,12 +104,12 @@ const PriceContainer = styled.div`
 const Price = styled.p`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
 const ItemDescription = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin-bottom: 1rem;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -146,11 +147,11 @@ const QuantityButton = styled.button<{ variant: 'add' | 'remove' }>`
       background-color: #ea580c;
     }
   ` : `
-    background-color: #e2e8f0;
-    color: #64748b;
+    background-color: ${props.theme.isDark ? '#475569' : '#e2e8f0'};
+    color: ${props.theme.colors.textSecondary};
     
     &:hover:not(:disabled) {
-      background-color: #cbd5e1;
+      background-color: ${props.theme.isDark ? '#64748b' : '#cbd5e1'};
     }
     
     &:disabled {
@@ -183,7 +184,7 @@ const QuantityDisplay = styled.span`
   font-weight: 600;
   min-width: 2rem;
   text-align: center;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
 `;
 
 const TotalContainer = styled.div`
@@ -192,7 +193,7 @@ const TotalContainer = styled.div`
 
 const TotalLabel = styled.p`
   font-size: 0.875rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0 0 0.25rem 0;
 `;
 

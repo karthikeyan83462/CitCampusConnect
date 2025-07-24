@@ -19,33 +19,35 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
   z-index: 50;
+  padding: 1rem;
   backdrop-filter: blur(4px);
 `;
 
 const ModalContent = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
-  max-width: 28rem;
+  max-width: 32rem;
   width: 100%;
-  padding: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  max-height: 90vh;
-  overflow-y: auto;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
 `;
 
-const ModalTitle = styled.h2`
-  font-size: 1.5rem;
+const ModalTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ModalTitleText = styled.h3`
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
@@ -54,7 +56,7 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   border-radius: 0.5rem;
   border: none;
   background: none;
@@ -62,8 +64,8 @@ const CloseButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: #f1f5f9;
-    color: #334155;
+    background-color: ${props => props.theme.isDark ? '#475569' : '#f1f5f9'};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -72,7 +74,8 @@ const CloseIcon = styled(X)`
   height: 1.5rem;
 `;
 
-const Form = styled.form`
+const ModalForm = styled.form`
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -87,17 +90,18 @@ const FormGroup = styled.div`
 const FormLabel = styled.label`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
 `;
 
 const FormInput = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -106,37 +110,42 @@ const FormInput = styled.input`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FormTextarea = styled.textarea`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   resize: vertical;
   min-height: 6rem;
-  font-family: inherit;
   
   &:focus {
     outline: none;
     border-color: #8b5cf6;
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
   }
+  
+  &::placeholder {
+    color: ${props => props.theme.colors.textSecondary};
+  }
 `;
 
 const FormSelect = styled.select`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -182,6 +191,11 @@ const SubmitButton = styled.button`
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -245,13 +259,15 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
     <ModalOverlay>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>Sell an Item</ModalTitle>
-          <CloseButton onClick={onClose}>
-            <CloseIcon />
-          </CloseButton>
+          <ModalTitle>
+            <ModalTitleText>Sell an Item</ModalTitleText>
+            <CloseButton onClick={onClose}>
+              <CloseIcon />
+            </CloseButton>
+          </ModalTitle>
         </ModalHeader>
 
-        <Form onSubmit={handleSubmit}>
+        <ModalForm onSubmit={handleSubmit}>
           <FormGroup>
             <FormLabel>Title</FormLabel>
             <FormInput
@@ -345,7 +361,7 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
             <ButtonIcon />
             List Item for Sale
           </SubmitButton>
-        </Form>
+        </ModalForm>
       </ModalContent>
     </ModalOverlay>
   );

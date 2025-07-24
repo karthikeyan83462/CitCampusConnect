@@ -51,21 +51,30 @@ const HeaderContent = styled.div`
 `;
 
 const HeaderTitle = styled.h1`
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
   @media (min-width: 640px) {
-    font-size: 2.5rem;
+    font-size: 2rem;
+  }
+  
+  @media (min-width: 768px) {
+    font-size: 2.25rem;
   }
 `;
 
 const HeaderSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0.5rem 0 0 0;
-  font-size: 1.125rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  
+  @media (min-width: 640px) {
+    font-size: 1.125rem;
+  }
 `;
 
 const SellButton = styled.button`
@@ -107,16 +116,21 @@ const ButtonIcon = styled(Plus)`
 `;
 
 const FiltersContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const FiltersGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
   
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -129,10 +143,10 @@ const InputContainer = styled.div`
 
 const InputIcon = styled.div`
   position: absolute;
-  left: 0.75rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: ${props => props.theme.colors.textSecondary};
   width: 1.25rem;
   height: 1.25rem;
   pointer-events: none;
@@ -140,12 +154,13 @@ const InputIcon = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -154,18 +169,19 @@ const SearchInput = styled.input`
   }
   
   &::placeholder {
-    color: #94a3b8;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FilterSelect = styled.select`
   width: 100%;
   padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -194,13 +210,13 @@ const WishlistButton = styled.button<{ isActive: boolean }>`
     border-color: #fecaca;
     color: #dc2626;
   ` : `
-    background-color: white;
-    border-color: #e2e8f0;
-    color: #64748b;
+    background-color: ${props.theme.colors.surface};
+    border-color: ${props.theme.colors.border};
+    color: ${props.theme.colors.textSecondary};
     
     &:hover {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
+      background-color: ${props.theme.isDark ? '#475569' : '#f8fafc'};
+      border-color: ${props.theme.isDark ? '#64748b' : '#cbd5e1'};
     }
   `}
 `;
@@ -229,12 +245,13 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease;
+  border: 1px solid ${props => props.theme.colors.border};
   
   &:hover {
     transform: translateY(-2px);
@@ -254,7 +271,7 @@ const StatValue = styled.div<{ color: string }>`
 `;
 
 const StatLabel = styled.div`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
   font-weight: 500;
 `;
@@ -276,9 +293,10 @@ const ItemsGrid = styled.div`
 const EmptyState = styled.div`
   text-center: center;
   padding: 3rem 1.5rem;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid ${props => props.theme.colors.border};
   
   @media (min-width: 640px) {
     padding: 4rem 2rem;
@@ -288,7 +306,7 @@ const EmptyState = styled.div`
 const EmptyIcon = styled(Search)`
   width: 3rem;
   height: 3rem;
-  color: #cbd5e1;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0 auto 1rem;
   
   @media (min-width: 640px) {
@@ -300,7 +318,7 @@ const EmptyIcon = styled(Search)`
 const EmptyTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
   
   @media (min-width: 640px) {
@@ -309,7 +327,7 @@ const EmptyTitle = styled.h3`
 `;
 
 const EmptyText = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
 `;
 

@@ -56,7 +56,7 @@ const HeaderContent = styled.div`
 const HeaderTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
@@ -66,7 +66,7 @@ const HeaderTitle = styled.h1`
 `;
 
 const HeaderSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0.5rem 0 0 0;
   font-size: 1.125rem;
 `;
@@ -120,11 +120,12 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   transition: transform 0.2s ease;
+  border: 1px solid ${props => props.theme.colors.border};
   
   &:hover {
     transform: translateY(-2px);
@@ -141,7 +142,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
@@ -164,13 +165,13 @@ const InfoRow = styled.div`
 `;
 
 const InfoLabel = styled.span`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
 `;
 
 const InfoValue = styled.span<{ color?: string }>`
   font-weight: 500;
-  color: ${props => props.color || '#1e293b'};
+  color: ${props => props.color || props.theme.colors.text};
 `;
 
 const RulesList = styled.div`
@@ -178,7 +179,7 @@ const RulesList = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const RuleItem = styled.p`
@@ -186,16 +187,17 @@ const RuleItem = styled.p`
 `;
 
 const ComplaintsContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ComplaintsTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 1.5rem 0;
 `;
 
@@ -207,19 +209,19 @@ const EmptyState = styled.div`
 const EmptyIcon = styled(AlertTriangle)`
   width: 4rem;
   height: 4rem;
-  color: #cbd5e1;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0 auto 1rem;
 `;
 
 const EmptyTitle = styled.h4`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
 `;
 
 const EmptyText = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const ComplaintsList = styled.div`
@@ -229,10 +231,11 @@ const ComplaintsList = styled.div`
 `;
 
 const ComplaintItem = styled.div`
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   padding: 1.5rem;
   transition: box-shadow 0.2s ease;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#ffffff'};
   
   &:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -265,7 +268,7 @@ const StatusIcon = styled.div`
 const ComplaintTitle = styled.h4`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
@@ -279,7 +282,7 @@ const PriorityBadge = styled.span<{ color: string }>`
 `;
 
 const ComplaintDescription = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin-bottom: 0.75rem;
   line-height: 1.5;
 `;
@@ -289,7 +292,7 @@ const ComplaintDetails = styled.div`
   align-items: center;
   gap: 1rem;
   font-size: 0.875rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const StatusBadge = styled.span<{ status: string }>`
@@ -323,16 +326,17 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   max-width: 28rem;
   width: 100%;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ModalHeader = styled.div`
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ModalTitle = styled.div`
@@ -344,7 +348,7 @@ const ModalTitle = styled.div`
 const ModalTitleText = styled.h3`
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
@@ -353,7 +357,7 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   border-radius: 0.5rem;
   border: none;
   background: none;
@@ -361,8 +365,8 @@ const CloseButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: #f1f5f9;
-    color: #334155;
+    background-color: ${props => props.theme.isDark ? '#475569' : '#f1f5f9'};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -382,17 +386,18 @@ const FormGroup = styled.div`
 const FormLabel = styled.label`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${props => props.theme.colors.text};
 `;
 
 const FormInput = styled.input`
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -401,7 +406,7 @@ const FormInput = styled.input`
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
@@ -691,7 +696,7 @@ const Hostel: React.FC = () => {
                   <ComplaintInfo>
                     <ComplaintTitleRow>
                       <StatusIcon>
-                        {getStatusIcon(complaint.status)}
+                      {getStatusIcon(complaint.status)}
                       </StatusIcon>
                       <ComplaintTitle>{complaint.title}</ComplaintTitle>
                       <PriorityBadge color={getPriorityColor(complaint.priority)}>
@@ -705,7 +710,7 @@ const Hostel: React.FC = () => {
                     </ComplaintDetails>
                   </ComplaintInfo>
                   <StatusBadge status={complaint.status}>
-                    {complaint.status.replace('_', ' ')}
+                      {complaint.status.replace('_', ' ')}
                   </StatusBadge>
                 </ComplaintHeader>
               </ComplaintItem>

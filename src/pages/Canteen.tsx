@@ -51,21 +51,30 @@ const HeaderContent = styled.div`
 `;
 
 const HeaderTitle = styled.h1`
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
   @media (min-width: 640px) {
-    font-size: 2.5rem;
+    font-size: 2rem;
+  }
+  
+  @media (min-width: 768px) {
+    font-size: 2.25rem;
   }
 `;
 
 const HeaderSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0.5rem 0 0 0;
-  font-size: 1.125rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  
+  @media (min-width: 640px) {
+    font-size: 1.125rem;
+  }
 `;
 
 const CartButton = styled.button`
@@ -107,11 +116,11 @@ const CartIcon = styled(ShoppingCart)`
   height: 1.25rem;
 `;
 
-const CartBadge = styled.span`
+const CartBadge = styled.div`
   position: absolute;
   top: -0.5rem;
   right: -0.5rem;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   color: #f59e0b;
   border-radius: 50%;
   width: 1.5rem;
@@ -121,13 +130,15 @@ const CartBadge = styled.span`
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const FiltersContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const FiltersGrid = styled.div`
@@ -140,16 +151,34 @@ const FiltersGrid = styled.div`
   }
 `;
 
+const SearchFilterContainer = styled.div`
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+const SearchFilterGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
 const InputContainer = styled.div`
   position: relative;
 `;
 
 const InputIcon = styled.div`
   position: absolute;
-  left: 0.75rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: ${props => props.theme.colors.textSecondary};
   width: 1.25rem;
   height: 1.25rem;
   pointer-events: none;
@@ -157,12 +186,13 @@ const InputIcon = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -171,18 +201,19 @@ const SearchInput = styled.input`
   }
   
   &::placeholder {
-    color: #94a3b8;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FilterSelect = styled.select`
   width: 100%;
   padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -457,8 +488,8 @@ const Canteen: React.FC = () => {
       </Header>
 
       {/* Filters */}
-      <FiltersContainer>
-        <FiltersGrid>
+      <SearchFilterContainer>
+        <SearchFilterGrid>
           <InputContainer>
             <InputIcon>
               <SearchIcon />
@@ -485,8 +516,8 @@ const Canteen: React.FC = () => {
               ))}
             </FilterSelect>
           </InputContainer>
-        </FiltersGrid>
-      </FiltersContainer>
+        </SearchFilterGrid>
+      </SearchFilterContainer>
 
       {/* Menu Items */}
       <MenuGrid>

@@ -63,7 +63,7 @@ const HeaderContent = styled.div`
 const HeaderTitle = styled.h1`
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   line-height: 1.2;
   
@@ -77,7 +77,7 @@ const HeaderTitle = styled.h1`
 `;
 
 const HeaderSubtitle = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0.5rem 0 0 0;
   font-size: 1rem;
   line-height: 1.5;
@@ -140,13 +140,14 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   position: relative;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 36rem;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const ModalCloseButton = styled.button`
@@ -158,17 +159,17 @@ const ModalCloseButton = styled.button`
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background-color: #f1f5f9;
+  background-color: ${props => props.theme.isDark ? '#475569' : '#f1f5f9'};
   border-radius: 0.5rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 10;
   
   &:hover {
-    background-color: #e2e8f0;
-    color: #334155;
+    background-color: ${props => props.theme.isDark ? '#64748b' : '#e2e8f0'};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -177,14 +178,11 @@ const ModalBody = styled.div`
 `;
 
 const SearchFilterContainer = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 1.25rem;
-  
-  @media (min-width: 640px) {
-    padding: 1.5rem;
-  }
+  padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const SearchFilterGrid = styled.div`
@@ -192,7 +190,7 @@ const SearchFilterGrid = styled.div`
   grid-template-columns: 1fr;
   gap: 1rem;
   
-  @media (min-width: 768px) {
+  @media (min-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
   }
 `;
@@ -203,10 +201,10 @@ const InputContainer = styled.div`
 
 const InputIcon = styled.div`
   position: absolute;
-  left: 0.75rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: ${props => props.theme.colors.textSecondary};
   width: 1.25rem;
   height: 1.25rem;
   pointer-events: none;
@@ -214,12 +212,13 @@ const InputIcon = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   
   &:focus {
     outline: none;
@@ -228,18 +227,19 @@ const SearchInput = styled.input`
   }
   
   &::placeholder {
-    color: #94a3b8;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const FilterSelect = styled.select`
   width: 100%;
   padding: 0.875rem 0.75rem 0.875rem 2.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
+  color: ${props => props.theme.colors.text};
   appearance: none;
   cursor: pointer;
   
@@ -261,12 +261,13 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.25rem;
   text-align: center;
   transition: transform 0.2s ease;
+  border: 1px solid ${props => props.theme.colors.border};
   
   @media (min-width: 640px) {
     padding: 1.5rem;
@@ -290,7 +291,7 @@ const StatValue = styled.div<{ color: string }>`
 `;
 
 const StatLabel = styled.div`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
   font-weight: 500;
 `;
@@ -316,9 +317,10 @@ const ClubsGrid = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 1.5rem;
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid ${props => props.theme.colors.border};
   
   @media (min-width: 640px) {
     padding: 4rem 2rem;
@@ -328,7 +330,7 @@ const EmptyState = styled.div`
 const EmptyIcon = styled(Users)`
   width: 3rem;
   height: 3rem;
-  color: #cbd5e1;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0 auto 1rem;
   
   @media (min-width: 640px) {
@@ -340,7 +342,7 @@ const EmptyIcon = styled(Users)`
 const EmptyTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
   
   @media (min-width: 640px) {
@@ -349,7 +351,7 @@ const EmptyTitle = styled.h3`
 `;
 
 const EmptyText = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   font-size: 0.875rem;
 `;
 
