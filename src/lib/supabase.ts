@@ -9,6 +9,42 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
+// Image upload utilities
+export const uploadImage = async (file: File, userId: string, folder: string = 'marketplace'): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `${folder}/${userId}/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('images')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError);
+    throw new Error('Failed to upload image');
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('images')
+    .getPublicUrl(filePath);
+
+  return publicUrl;
+};
+
+export const deleteImage = async (filePath: string): Promise<void> => {
+  const { error } = await supabase.storage
+    .from('images')
+    .remove([filePath]);
+
+  if (error) {
+    console.error('Delete error:', error);
+    throw new Error('Failed to delete image');
+  }
+};
+
 // --- Define the types for your DB schema ---
 export type Database = {
   public: {

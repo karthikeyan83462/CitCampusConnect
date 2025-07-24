@@ -11,6 +11,7 @@ html {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 body {
@@ -23,6 +24,9 @@ body {
   background-color: #f8fafc;
   color: #1e293b;
   transition: background-color 0.2s ease, color 0.2s ease;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  width: 100%;
+  min-width: 320px; /* Minimum width to prevent extreme squashing */
 }
 
 /* Theme variables */
@@ -48,6 +52,13 @@ body {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+}
+
+/* Responsive container */
+#root {
+  width: 100%;
+  overflow-x: hidden;
+  min-width: 320px;
 }
 
 /* Scrollbar styling */
@@ -78,4 +89,17 @@ body {
 ::selection {
   background-color: var(--accent-color);
   color: white;
+}
+
+/* Responsive utilities */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px; /* Slightly smaller font size on very small screens */
+  }
+}
+
+@media (max-width: 320px) {
+  html {
+    font-size: 13px; /* Even smaller for very small screens */
+  }
 }

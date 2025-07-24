@@ -72,13 +72,13 @@ const ActivityTitleText = styled.p`
   text-overflow: ellipsis;
 `;
 
-const StatusBadge = styled.span<{ status: string }>`
+const StatusBadge = styled.span<{ $status: string }>`
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 9999px;
   background-color: ${props => {
-    switch (props.status) {
+    switch (props.$status) {
       case 'approved':
       case 'completed':
         return '#dcfce7';
@@ -91,7 +91,7 @@ const StatusBadge = styled.span<{ status: string }>`
     }
   }};
   color: ${props => {
-    switch (props.status) {
+    switch (props.$status) {
       case 'approved':
       case 'completed':
         return '#166534';
@@ -243,7 +243,7 @@ const RecentActivity: React.FC = () => {
                   {activity.title}
                 </ActivityTitleText>
                 {activity.status && (
-                  <StatusBadge status={activity.status}>
+                  <StatusBadge $status={activity.status}>
                     {activity.status}
                   </StatusBadge>
                 )}

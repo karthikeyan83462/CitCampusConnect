@@ -4,6 +4,7 @@ import { Search, Filter, Plus, Heart, Package, Tag, Star, DollarSign } from 'luc
 import { fetchItems, addToWishlist, removeFromWishlist } from '../store/slices/marketplaceSlice';
 import ProductCard from '../components/Marketplace/ProductCard';
 import SellItemModal from '../components/Marketplace/SellItemModal';
+import ContactSellerModal from '../components/Marketplace/ContactSellerModal';
 import type { RootState, AppDispatch } from '../store/store';
 import styled, { keyframes } from 'styled-components';
 
@@ -192,7 +193,7 @@ const FilterSelect = styled.select`
   }
 `;
 
-const WishlistButton = styled.button<{ isActive: boolean }>`
+const WishlistButton = styled.button<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,7 +206,7 @@ const WishlistButton = styled.button<{ isActive: boolean }>`
   cursor: pointer;
   transition: all 0.2s ease;
   
-  ${props => props.isActive ? `
+  ${props => props.$isActive ? `
     background-color: #fef2f2;
     border-color: #fecaca;
     color: #dc2626;
@@ -221,11 +222,11 @@ const WishlistButton = styled.button<{ isActive: boolean }>`
   `}
 `;
 
-const WishlistIcon = styled(Heart)<{ isActive: boolean }>`
+const WishlistIcon = styled(Heart)<{ $isActive: boolean }>`
   width: 1.25rem;
   height: 1.25rem;
   
-  ${props => props.isActive && `
+  ${props => props.$isActive && `
     fill: currentColor;
   `}
 `;
@@ -349,6 +350,8 @@ const Marketplace: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{ sellerId: string; itemId: string; title: string } | null>(null);
 
   useEffect(() => {
     dispatch(fetchItems());
@@ -360,6 +363,11 @@ const Marketplace: React.FC = () => {
     } else {
       dispatch(addToWishlist(itemId));
     }
+  };
+
+  const handleContactSeller = (sellerId: string, itemId: string, title: string) => {
+    setSelectedItem({ sellerId, itemId, title });
+    setIsContactModalOpen(true);
   };
 
   const categories = ['Books', 'Electronics', 'Clothing', 'Furniture', 'Sports', 'Other'];
@@ -427,10 +435,10 @@ const Marketplace: React.FC = () => {
           </InputContainer>
 
           <WishlistButton
-            isActive={showWishlistOnly}
+            $isActive={showWishlistOnly}
             onClick={() => setShowWishlistOnly(!showWishlistOnly)}
           >
-            <WishlistIcon isActive={showWishlistOnly} />
+            <WishlistIcon $isActive={showWishlistOnly} />
             <span>Wishlist Only</span>
           </WishlistButton>
         </FiltersGrid>
@@ -466,6 +474,7 @@ const Marketplace: React.FC = () => {
             item={item}
             isWishlisted={wishlist.includes(item.id)}
             onWishlistToggle={handleWishlistToggle}
+            onContact={(sellerId) => handleContactSeller(sellerId, item.id, item.title)}
           />
         ))}
       </ItemsGrid>
@@ -484,6 +493,21 @@ const Marketplace: React.FC = () => {
           isOpen={isSellModalOpen}
           onClose={() => setIsSellModalOpen(false)}
           userId={user.id}
+        />
+      )}
+
+      {/* Contact Seller Modal */}
+      {user && selectedItem && (
+        <ContactSellerModal
+          isOpen={isContactModalOpen}
+          onClose={() => {
+            setIsContactModalOpen(false);
+            setSelectedItem(null);
+          }}
+          sellerId={selectedItem.sellerId}
+          itemId={selectedItem.itemId}
+          itemTitle={selectedItem.title}
+          currentUserId={user.id}
         />
       )}
     </MarketplaceContainer>

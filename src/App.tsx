@@ -11,6 +11,7 @@ import ViewClub from './pages/ViewClub';
 import Canteen from './pages/Canteen';
 import Hostel from './pages/Hostel';
 import Marketplace from './pages/Marketplace';
+import Messages from './pages/Messages';
 import Settings from './pages/Settings';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { checkSession } from './store/slices/authSlice';
@@ -50,7 +51,7 @@ const App: React.FC = () => {
             <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/auth"} />} />
             {user ? (
-              <Route path="/" element={<Layout />}>
+              <Route path="/*" element={<Layout />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="clubs" element={<Clubs />} />
                 <Route path="club-management" element={<ClubManagement />} />
@@ -58,6 +59,7 @@ const App: React.FC = () => {
                 <Route path="canteen" element={<Canteen />} />
                 <Route path="hostel" element={<Hostel />} />
                 <Route path="marketplace" element={<Marketplace />} />
+                <Route path="messages" element={<Messages />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
             ) : (

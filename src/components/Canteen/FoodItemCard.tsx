@@ -129,7 +129,7 @@ const QuantityControls = styled.div`
   gap: 0.75rem;
 `;
 
-const QuantityButton = styled.button<{ variant: 'add' | 'remove' }>`
+const QuantityButton = styled.button<{ $variant: 'add' | 'remove' }>`
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
@@ -139,7 +139,7 @@ const QuantityButton = styled.button<{ variant: 'add' | 'remove' }>`
   border: none;
   cursor: pointer;
   
-  ${props => props.variant === 'add' ? `
+  ${props => props.$variant === 'add' ? `
     background-color: #f59e0b;
     color: white;
     
@@ -238,7 +238,7 @@ const FoodItemCard: React.FC<FoodItemCardProps> = ({ item, quantity, onQuantityC
         <CardFooter>
           <QuantityControls>
             <QuantityButton
-              variant="remove"
+              $variant="remove"
               onClick={() => onQuantityChange(Math.max(0, quantity - 1))}
               disabled={quantity === 0}
             >
@@ -248,7 +248,7 @@ const FoodItemCard: React.FC<FoodItemCardProps> = ({ item, quantity, onQuantityC
             </QuantityButton>
             <QuantityDisplay>{quantity}</QuantityDisplay>
             <QuantityButton
-              variant="add"
+              $variant="add"
               onClick={() => onQuantityChange(quantity + 1)}
             >
               <ButtonIcon>

@@ -6,6 +6,7 @@ import clubSlice from './slices/clubSlice';
 import hostelSlice from './slices/hostelSlice';
 import canteenSlice from './slices/canteenSlice';
 import marketplaceSlice from './slices/marketplaceSlice';
+import messagesSlice from './slices/messagesSlice';
 import settingsSlice from './slices/settingsSlice';
 
 const persistConfig = {
@@ -23,6 +24,7 @@ export const store = configureStore({
     hostel: hostelSlice,
     canteen: canteenSlice,
     marketplace: marketplaceSlice,
+    messages: messagesSlice,
     settings: settingsSlice,
   },
   middleware: (getDefaultMiddleware) =>

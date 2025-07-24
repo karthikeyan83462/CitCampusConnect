@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { createItem } from '../../store/slices/marketplaceSlice';
-import { X, Package, Tag, DollarSign, Image } from 'lucide-react';
+import { X, Package, Tag, DollarSign, Image, Upload, Trash2, Plus } from 'lucide-react';
+import { uploadImage } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import type { AppDispatch } from '../../store/store';
 import styled from 'styled-components';
@@ -27,8 +28,10 @@ const ModalOverlay = styled.div`
 const ModalContent = styled.div`
   background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
-  max-width: 32rem;
+  max-width: 40rem;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid ${props => props.theme.colors.border};
 `;
@@ -166,6 +169,107 @@ const FormGrid = styled.div`
   }
 `;
 
+const ImageUploadContainer = styled.div`
+  border: 2px dashed ${props => props.theme.colors.border};
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: #8b5cf6;
+    background-color: ${props => props.theme.isDark ? '#1e293b' : '#f8fafc'};
+  }
+  
+  &.drag-over {
+    border-color: #8b5cf6;
+    background-color: ${props => props.theme.isDark ? '#1e293b' : '#f8fafc'};
+  }
+`;
+
+const UploadIcon = styled(Upload)`
+  width: 2rem;
+  height: 2rem;
+  color: ${props => props.theme.colors.textSecondary};
+  margin: 0 auto 0.5rem;
+`;
+
+const UploadText = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const UploadSubtext = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0 0;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const ImagePreviewContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const ImagePreviewItem = styled.div`
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+const ImagePreview = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #dc2626;
+    transform: scale(1.1);
+  }
+`;
+
+const RemoveIcon = styled(Trash2)`
+  width: 0.75rem;
+  height: 0.75rem;
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+`;
+
 const SubmitButton = styled.button`
   width: 100%;
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
@@ -206,6 +310,9 @@ const ButtonIcon = styled(Package)`
 
 const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -225,6 +332,52 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
     'poor': 'Poor'
   };
 
+
+
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files) return;
+
+    setIsUploading(true);
+    try {
+      const uploadPromises = Array.from(files).map(file => uploadImage(file, userId, 'marketplace'));
+      const uploadedUrls = await Promise.all(uploadPromises);
+      
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls]
+      }));
+      
+      toast.success(`${files.length} image(s) uploaded successfully!`);
+    } catch (error) {
+      toast.error('Failed to upload image(s)');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFileSelect(e.dataTransfer.files);
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -234,8 +387,6 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
         price: parseFloat(formData.price),
         seller_id: userId,
         is_available: true,
-        // If no image URL is provided, set an empty array
-        images: formData.images.length > 0 ? formData.images : []
       };
 
       await dispatch(createItem(submitData)).unwrap();
@@ -322,44 +473,63 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
             </FormGroup>
           </FormGrid>
 
-          <FormGrid>
-            <FormGroup>
-              <FormLabel>Condition</FormLabel>
-              <FormSelect
-                name="condition"
-                value={formData.condition}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Condition</option>
-                {conditions.map(condition => (
-                  <option key={condition} value={condition}>{conditionLabels[condition]}</option>
+          <FormGroup>
+            <FormLabel>Condition</FormLabel>
+            <FormSelect
+              name="condition"
+              value={formData.condition}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select Condition</option>
+              {conditions.map(condition => (
+                <option key={condition} value={condition}>{conditionLabels[condition]}</option>
+              ))}
+            </FormSelect>
+          </FormGroup>
+
+          <FormGroup>
+            <FormLabel>Images (Optional)</FormLabel>
+            <ImageUploadContainer
+              className={dragOver ? 'drag-over' : ''}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadIcon />
+              <UploadText>Click to upload or drag and drop</UploadText>
+              <UploadSubtext>PNG, JPG, JPEG up to 5MB each</UploadSubtext>
+            </ImageUploadContainer>
+            
+            <HiddenFileInput
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => handleFileSelect(e.target.files)}
+            />
+
+            {formData.images.length > 0 && (
+              <ImagePreviewContainer>
+                {formData.images.map((imageUrl, index) => (
+                  <ImagePreviewItem key={index}>
+                    <ImagePreview src={imageUrl} alt={`Preview ${index + 1}`} />
+                    <RemoveImageButton onClick={() => removeImage(index)}>
+                      <RemoveIcon />
+                    </RemoveImageButton>
+                    {isUploading && index >= formData.images.length - 1 && (
+                      <LoadingOverlay>Uploading...</LoadingOverlay>
+                    )}
+                  </ImagePreviewItem>
                 ))}
-              </FormSelect>
-            </FormGroup>
+              </ImagePreviewContainer>
+            )}
+          </FormGroup>
 
-            <FormGroup>
-              <FormLabel>Image URL</FormLabel>
-              <FormInput
-                type="url"
-                name="imageUrl"
-                placeholder="https://..."
-                onChange={(e) => {
-                  const url = e.target.value.trim();
-                  if (url) {
-                    setFormData(prev => ({
-                      ...prev,
-                      images: [url]
-                    }));
-                  }
-                }}
-              />
-            </FormGroup>
-          </FormGrid>
-
-          <SubmitButton type="submit">
+          <SubmitButton type="submit" disabled={isUploading}>
             <ButtonIcon />
-            List Item for Sale
+            {isUploading ? 'Uploading...' : 'List Item for Sale'}
           </SubmitButton>
         </ModalForm>
       </ModalContent>
