@@ -1,179 +1,460 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { 
-  Users, Building, UtensilsCrossed, ShoppingBag, 
-  ArrowRight, TrendingUp, Calendar, Bell 
-} from 'lucide-react';
+import { Users, Building, UtensilsCrossed, ShoppingBag, TrendingUp, Calendar, Bell } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 import DashboardStats from '../components/Dashboard/DashboardStats';
 import RecentActivity from '../components/Dashboard/RecentActivity';
 import type { RootState } from '../store/store';
+import styled from 'styled-components';
+
+const DashboardContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const WelcomeSection = styled.div`
+  background: ${props => props.theme.isDark ? 'linear-gradient(135deg, #1e293b, #334155)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'};
+  border-radius: 1rem;
+  padding: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+`;
+
+const WelcomeContent = styled.div`
+  position: relative;
+  z-index: 2;
+`;
+
+const WelcomeTitle = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+  
+  @media (min-width: 640px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const WelcomeSubtitle = styled.p`
+  font-size: 1.125rem;
+  opacity: 0.9;
+  margin: 0;
+  
+  @media (min-width: 640px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const WelcomeIcon = styled.div`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  
+  @media (min-width: 640px) {
+    top: 2rem;
+    right: 2rem;
+  }
+`;
+
+const IconContainer = styled.div`
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @media (min-width: 640px) {
+    width: 5rem;
+    height: 5rem;
+  }
+`;
+
+const QuickActionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+`;
+
+const ActionCard = styled(Link)`
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid ${props => props.theme.colors.border};
+  
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const ActionIcon = styled.div<{ color: string }>`
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background: ${props => props.color};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+`;
+
+const ActionTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0 0 0.5rem 0;
+`;
+
+const ActionDescription = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+`;
+
+const ActionLink = styled.div`
+  display: flex;
+  align-items: center;
+  color: #3b82f6;
+  font-weight: 500;
+  font-size: 0.875rem;
+  
+  ${ActionCard}:hover & {
+    color: #2563eb;
+  }
+`;
+
+const LinkText = styled.span``;
+
+const LinkIcon = styled(TrendingUp)`
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.5rem;
+  transition: transform 0.3s ease;
+  
+  ${ActionCard}:hover & {
+    transform: translateX(4px);
+  }
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr;
+  }
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const Card = styled.div`
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0;
+`;
+
+const CardIcon = styled.div`
+  color: ${props => props.theme.colors.textSecondary};
+  display: flex;
+  align-items: center;
+`;
+
+const EventList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const EventItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#f8fafc'};
+  border-radius: 0.5rem;
+`;
+
+const EventIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+`;
+
+const EventInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const EventTitle = styled.h4`
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0 0 0.25rem 0;
+`;
+
+const EventDetails = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const NotificationList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const NotificationItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#f8fafc'};
+  border-radius: 0.5rem;
+`;
+
+const NotificationIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+`;
+
+const NotificationInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const NotificationTitle = styled.h4`
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin: 0 0 0.25rem 0;
+`;
+
+const NotificationDetails = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+`;
+
+const UsersIcon = styled(Users)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const BuildingIcon = styled(Building)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const UtensilsCrossedIcon = styled(UtensilsCrossed)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const ShoppingBagIcon = styled(ShoppingBag)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const TrendingUpIcon = styled(TrendingUp)`
+  width: 2.5rem;
+  height: 2.5rem;
+  color: white;
+`;
+
+const CalendarIcon = styled(Calendar)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const BellIcon = styled(Bell)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const Dashboard: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const { isDark } = useTheme();
 
   const quickActions = [
     {
-      title: 'Browse Clubs',
+      title: 'Join a Club',
       description: 'Discover and join student organizations',
-      icon: <Users className="w-6 h-6" />,
-      color: 'from-blue-500 to-blue-600',
-      link: '/clubs',
-      roles: ['student', 'super_admin'],
-    },
-    {
-      title: 'Hostel Services',
-      description: 'Manage room allocation and complaints',
-      icon: <Building className="w-6 h-6" />,
-      color: 'from-emerald-500 to-emerald-600',
-      link: '/hostel',
-      roles: ['student', 'hostel_admin', 'super_admin'],
+      icon: <UsersIcon />,
+      color: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+      path: '/clubs'
     },
     {
       title: 'Order Food',
-      description: 'Browse menu and place canteen orders',
-      icon: <UtensilsCrossed className="w-6 h-6" />,
-      color: 'from-amber-500 to-orange-500',
-      link: '/canteen',
-      roles: ['student', 'canteen_vendor', 'super_admin'],
+      description: 'Browse canteen menu and place orders',
+      icon: <UtensilsCrossedIcon />,
+      color: 'linear-gradient(135deg, #f59e0b, #d97706)',
+      path: '/canteen'
+    },
+    {
+      title: 'Hostel Services',
+      description: 'Manage your hostel accommodations',
+      icon: <BuildingIcon />,
+      color: 'linear-gradient(135deg, #10b981, #059669)',
+      path: '/hostel'
     },
     {
       title: 'Marketplace',
-      description: 'Buy and sell items with fellow students',
-      icon: <ShoppingBag className="w-6 h-6" />,
-      color: 'from-purple-500 to-purple-600',
-      link: '/marketplace',
-      roles: ['student', 'super_admin'],
-    },
+      description: 'Buy and sell items with other students',
+      icon: <ShoppingBagIcon />,
+      color: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+      path: '/marketplace'
+    }
   ];
 
-  const filteredActions = quickActions.filter(action => 
-    user?.role && action.roles.includes(user.role)
-  );
-
   const upcomingEvents = [
-    {
-      title: 'Tech Fest 2025',
-      date: 'March 15-17',
-      type: 'Event',
-      color: 'bg-blue-100 text-blue-800',
-    },
-    {
-      title: 'Photography Club Meeting',
-      date: 'Tomorrow, 4 PM',
-      type: 'Club',
-      color: 'bg-purple-100 text-purple-800',
-    },
-    {
-      title: 'Hostel Maintenance',
-      date: 'This Weekend',
-      type: 'Notice',
-      color: 'bg-orange-100 text-orange-800',
-    },
+    { title: 'Photography Workshop', date: 'Tomorrow, 2:00 PM' },
+    { title: 'Basketball Tournament', date: 'Friday, 4:00 PM' },
+    { title: 'Coding Competition', date: 'Next Week, 10:00 AM' }
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Welcome back, {user?.full_name}!
-            </h1>
-            <p className="text-blue-100 text-lg">
-              Ready to make the most of your campus experience today?
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4">
-              <TrendingUp className="w-12 h-12 text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
+    <DashboardContainer>
+      <WelcomeSection>
+        <WelcomeContent>
+          <WelcomeTitle>
+            Welcome back, {user?.full_name}!
+          </WelcomeTitle>
+          <WelcomeSubtitle>
+            Ready to make the most of your campus experience today?
+          </WelcomeSubtitle>
+          <WelcomeIcon>
+            <IconContainer>
+              <TrendingUpIcon />
+            </IconContainer>
+          </WelcomeIcon>
+        </WelcomeContent>
+      </WelcomeSection>
 
-      {/* Stats Overview */}
       <DashboardStats />
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredActions.map((action, index) => (
-          <Link
-            key={index}
-            to={action.link}
-            className="group bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${action.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
+      <QuickActionsGrid>
+        {quickActions.map((action, index) => (
+          <ActionCard key={index} to={action.path}>
+            <ActionIcon color={action.color}>
               {action.icon}
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-              {action.title}
-            </h3>
-            <p className="text-gray-600 text-sm mb-4">{action.description}</p>
-            <div className="flex items-center text-blue-600 group-hover:text-blue-700">
-              <span className="text-sm font-medium">Get started</span>
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
+            </ActionIcon>
+            <ActionTitle>{action.title}</ActionTitle>
+            <ActionDescription>{action.description}</ActionDescription>
+          </ActionCard>
         ))}
-      </div>
+      </QuickActionsGrid>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2">
+      <ContentGrid>
+        <MainContent>
           <RecentActivity />
-        </div>
+        </MainContent>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Events</CardTitle>
+            <CardIcon>
+              <CalendarIcon />
+            </CardIcon>
+          </CardHeader>
+          
+          <EventList>
+            {upcomingEvents.map((event, index) => (
+              <EventItem key={index}>
+                <EventIcon />
+                <EventInfo>
+                  <EventTitle>{event.title}</EventTitle>
+                  <EventDetails>{event.date}</EventDetails>
+                </EventInfo>
+              </EventItem>
+            ))}
+          </EventList>
+        </Card>
 
-        {/* Upcoming Events & Notifications */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Upcoming Events</h3>
-              <Calendar className="w-5 h-5 text-gray-400" />
-            </div>
-            
-            <div className="space-y-4">
-              {upcomingEvents.map((event, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                    <p className="text-xs text-gray-600 mt-1">{event.date}</p>
-                    <span className={`inline-block text-xs px-2 py-1 rounded-full mt-2 ${event.color}`}>
-                      {event.type}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-              <Bell className="w-5 h-5 text-gray-400" />
-            </div>
-            
-            <div className="space-y-3">
-              <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <p className="text-sm font-medium text-blue-900">New club event posted</p>
-                <p className="text-xs text-blue-700 mt-1">Photography Club</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
-                <p className="text-sm font-medium text-green-900">Order ready for pickup</p>
-                <p className="text-xs text-green-700 mt-1">Canteen Order #1234</p>
-              </div>
-              <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                <p className="text-sm font-medium text-orange-900">Maintenance scheduled</p>
-                <p className="text-xs text-orange-700 mt-1">Block A - This weekend</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardIcon>
+              <BellIcon />
+            </CardIcon>
+          </CardHeader>
+          
+          <NotificationList>
+            <NotificationItem>
+              <NotificationIcon />
+              <NotificationInfo>
+                <NotificationTitle>New club event posted</NotificationTitle>
+                <NotificationDetails>Photography Club</NotificationDetails>
+              </NotificationInfo>
+            </NotificationItem>
+            <NotificationItem>
+              <NotificationIcon />
+              <NotificationInfo>
+                <NotificationTitle>Order ready for pickup</NotificationTitle>
+                <NotificationDetails>Canteen Order #1234</NotificationDetails>
+              </NotificationInfo>
+            </NotificationItem>
+            <NotificationItem>
+              <NotificationIcon />
+              <NotificationInfo>
+                <NotificationTitle>Maintenance scheduled</NotificationTitle>
+                <NotificationDetails>Block A - This weekend</NotificationDetails>
+              </NotificationInfo>
+            </NotificationItem>
+          </NotificationList>
+        </Card>
+      </ContentGrid>
+    </DashboardContainer>
   );
 };
 

@@ -5,6 +5,7 @@ import { Mail, Lock, User, UserCheck, Hash } from 'lucide-react';
 import { signUp } from '../../store/slices/authSlice';
 import type { RootState, AppDispatch } from '../../store/store';
 import type { Database } from '../../lib/supabase';
+import styled, { keyframes } from 'styled-components';
 
 interface SignupFormData {
   email: string;
@@ -17,6 +18,198 @@ interface SignupFormData {
 interface SignupFormProps {
   onToggle: () => void;
 }
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const FormContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+`;
+
+const FormHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const FormTitle = styled.h2`
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+`;
+
+const FormSubtitle = styled.p`
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const FormGroup = styled.div``;
+
+const FormLabel = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+`;
+
+const InputContainer = styled.div`
+  position: relative;
+`;
+
+const InputIcon = styled.div`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const ErrorText = styled.p`
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const Spinner = styled.div`
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const ToggleSection = styled.div`
+  margin-top: 1.5rem;
+  text-align: center;
+`;
+
+const ToggleText = styled.p`
+  color: #4b5563;
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  
+  &:hover {
+    color: #2563eb;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const UserIcon = styled(User)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const MailIcon = styled(Mail)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const UserCheckIcon = styled(UserCheck)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const HashIcon = styled(Hash)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const LockIcon = styled(Lock)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const SignupForm: React.FC<SignupFormProps> = ({ onToggle }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,151 +230,135 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggle }) => {
   ];
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Join CampusConnect
-          </h2>
-          <p className="text-gray-600 mt-2">Create your account to get started</p>
-        </div>
+    <FormContainer>
+      <FormHeader>
+        <FormTitle>Join CampusConnect</FormTitle>
+        <FormSubtitle>Create your account to get started</FormSubtitle>
+      </FormHeader>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
+      {error && (
+        <ErrorMessage>
+          {error}
+        </ErrorMessage>
+      )}
+
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <FormGroup>
+          <FormLabel>Full Name</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <UserIcon />
+            </InputIcon>
+            <FormInput
+              type="text"
+              {...register('fullName', { required: 'Full name is required' })}
+              placeholder="Enter your full name"
+            />
+          </InputContainer>
+          {errors.fullName && (
+            <ErrorText>{errors.fullName.message}</ErrorText>
+          )}
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>Email Address</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <MailIcon />
+            </InputIcon>
+            <FormInput
+              type="email"
+              {...register('email', { required: 'Email is required' })}
+              placeholder="Enter your email"
+            />
+          </InputContainer>
+          {errors.email && (
+            <ErrorText>{errors.email.message}</ErrorText>
+          )}
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>Role</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <UserCheckIcon />
+            </InputIcon>
+            <FormSelect
+              {...register('role', { required: 'Role is required' })}
+            >
+              <option value="">Select your role</option>
+              {roleOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </FormSelect>
+          </InputContainer>
+          {errors.role && (
+            <ErrorText>{errors.role.message}</ErrorText>
+          )}
+        </FormGroup>
+
+        {watchedRole === 'student' && (
+          <FormGroup>
+            <FormLabel>Student ID</FormLabel>
+            <InputContainer>
+              <InputIcon>
+                <HashIcon />
+              </InputIcon>
+              <FormInput
+                type="text"
+                {...register('studentId', { required: 'Student ID is required for students' })}
+                placeholder="Enter your student ID"
+              />
+            </InputContainer>
+            {errors.studentId && (
+              <ErrorText>{errors.studentId.message}</ErrorText>
+            )}
+          </FormGroup>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                {...register('fullName', { required: 'Full name is required' })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your full name"
-              />
-            </div>
-            {errors.fullName && (
-              <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="email"
-                {...register('email', { required: 'Email is required' })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your email"
-              />
-            </div>
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Role
-            </label>
-            <div className="relative">
-              <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <select
-                {...register('role', { required: 'Role is required' })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
-              >
-                <option value="">Select your role</option>
-                {roleOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {errors.role && (
-              <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>
-            )}
-          </div>
-
-          {watchedRole === 'student' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Student ID
-              </label>
-              <div className="relative">
-                <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  {...register('studentId', { required: 'Student ID is required for students' })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your student ID"
-                />
-              </div>
-              {errors.studentId && (
-                <p className="text-red-500 text-sm mt-1">{errors.studentId.message}</p>
-              )}
-            </div>
+        <FormGroup>
+          <FormLabel>Password</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <LockIcon />
+            </InputIcon>
+            <FormInput
+              type="password"
+              {...register('password', { 
+                required: 'Password is required',
+                minLength: { value: 6, message: 'Password must be at least 6 characters' }
+              })}
+              placeholder="Create a password"
+            />
+          </InputContainer>
+          {errors.password && (
+            <ErrorText>{errors.password.message}</ErrorText>
           )}
+        </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="password"
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Password must be at least 6 characters' }
-                })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Create a password"
-              />
-            </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-            )}
-          </div>
+        <SubmitButton type="submit" disabled={loading}>
+          {loading ? (
+            <Spinner />
+          ) : (
+            <>
+              <UserIcon />
+              <span>Create Account</span>
+            </>
+          )}
+        </SubmitButton>
+      </Form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <User className="w-5 h-5" />
-                <span>Create Account</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Already have an account?{' '}
-            <button
-              onClick={onToggle}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Sign in here
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+      <ToggleSection>
+        <ToggleText>
+          Already have an account?{' '}
+          <ToggleButton onClick={onToggle}>
+            Sign in here
+          </ToggleButton>
+        </ToggleText>
+      </ToggleSection>
+    </FormContainer>
   );
 };
 

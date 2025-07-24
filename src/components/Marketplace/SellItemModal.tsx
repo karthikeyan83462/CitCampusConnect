@@ -1,15 +1,194 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { createItem } from '../../store/slices/marketplaceSlice';
-import { X } from 'lucide-react';
+import { X, Package, Tag, DollarSign, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { AppDispatch } from '../../store/store';
+import styled from 'styled-components';
 
 interface SellItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
 }
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  max-width: 28rem;
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+`;
+
+const ModalTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: #64748b;
+  border-radius: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+  }
+`;
+
+const CloseIcon = styled(X)`
+  width: 1.5rem;
+  height: 1.5rem;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const FormLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  resize: vertical;
+  min-height: 6rem;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  }
+`;
+
+const ButtonIcon = styled(Package)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,44 +242,43 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Sell an Item</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+    <ModalOverlay>
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>Sell an Item</ModalTitle>
+          <CloseButton onClick={onClose}>
+            <CloseIcon />
+          </CloseButton>
+        </ModalHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
+        <Form onSubmit={handleSubmit}>
+          <FormGroup>
+            <FormLabel>Title</FormLabel>
+            <FormInput
               type="text"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Enter item title"
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
+          <FormGroup>
+            <FormLabel>Description</FormLabel>
+            <FormTextarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
               required
-              rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Describe your item..."
             />
-          </div>
+          </FormGroup>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-              <input
+          <FormGrid>
+            <FormGroup>
+              <FormLabel>Price (₹)</FormLabel>
+              <FormInput
                 type="number"
                 name="price"
                 value={formData.price}
@@ -108,47 +286,45 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
                 required
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="0.00"
               />
-            </div>
+            </FormGroup>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select
+            <FormGroup>
+              <FormLabel>Category</FormLabel>
+              <FormSelect
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="">Select Category</option>
                 {categories.map(category => (
                   <option key={category} value={category}>{category}</option>
                 ))}
-              </select>
-            </div>
-          </div>
+              </FormSelect>
+            </FormGroup>
+          </FormGrid>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
-              <select
+          <FormGrid>
+            <FormGroup>
+              <FormLabel>Condition</FormLabel>
+              <FormSelect
                 name="condition"
                 value={formData.condition}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="">Select Condition</option>
                 {conditions.map(condition => (
                   <option key={condition} value={condition}>{conditionLabels[condition]}</option>
                 ))}
-              </select>
-            </div>
+              </FormSelect>
+            </FormGroup>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-              <input
+            <FormGroup>
+              <FormLabel>Image URL</FormLabel>
+              <FormInput
                 type="url"
                 name="imageUrl"
                 placeholder="https://..."
@@ -161,20 +337,17 @@ const SellItemModal: React.FC<SellItemModalProps> = ({ isOpen, onClose, userId }
                     }));
                   }
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
-            </div>
-          </div>
+            </FormGroup>
+          </FormGrid>
 
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all"
-          >
+          <SubmitButton type="submit">
+            <ButtonIcon />
             List Item for Sale
-          </button>
-        </form>
-      </div>
-    </div>
+          </SubmitButton>
+        </Form>
+      </ModalContent>
+    </ModalOverlay>
   );
 };
 

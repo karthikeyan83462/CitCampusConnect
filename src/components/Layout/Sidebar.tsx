@@ -1,92 +1,233 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import {
-  Home, Users, Building, UtensilsCrossed, ShoppingBag,
-  Settings, Crown, Truck, Shield, X
-} from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { RootState } from '../../store/store';
+import styled from 'styled-components';
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
 }
 
+const SidebarContainer = styled.div<{ isOpen: boolean }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 16rem;
+  background-color: ${props => props.theme.isDark ? '#1e293b' : 'white'};
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid ${props => props.theme.colors.border};
+  
+  @media (max-width: 768px) {
+    transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+  }
+  
+  @media (min-width: 769px) {
+    transform: translateX(0);
+  }
+`;
+
+const SidebarHeader = styled.div`
+  padding: 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SidebarTitle = styled.h2`
+  color: ${props => props.theme.colors.text};
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: ${props => props.theme.colors.textSecondary};
+  border-radius: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  
+  @media (min-width: 769px) {
+    display: none;
+  }
+  
+  &:hover {
+    background-color: ${props => props.theme.isDark ? '#334155' : '#f1f5f9'};
+    color: ${props => props.theme.isDark ? 'white' : '#334155'};
+  }
+`;
+
+const SidebarContent = styled.div`
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+`;
+
+const MenuList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const MenuItem = styled.li`
+  margin: 0;
+`;
+
+const MenuLink = styled(Link)<{ isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: ${props => props.isActive ? props.theme.colors.text : props.theme.colors.textSecondary};
+  text-decoration: none;
+  font-weight: 500;
+  
+  ${props => props.isActive && `
+    background-color: ${props.theme.isDark ? '#3b82f6' : '#f1f5f9'};
+  `}
+  
+  &:hover {
+    background-color: ${props => props.isActive ? (props.theme.isDark ? '#3b82f6' : '#f1f5f9') : (props.theme.isDark ? '#334155' : '#f8fafc')};
+    color: ${props => props.theme.colors.text};
+  }
+`;
+
+const MenuIcon = styled.div<{ isActive: boolean }>`
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  
+  ${props => props.isActive ? `
+    color: ${props.theme.colors.text};
+  ` : `
+    color: ${props.theme.colors.textSecondary};
+    
+    ${MenuLink}:hover & {
+      color: ${props.theme.colors.text};
+    }
+  `}
+`;
+
+const MenuText = styled.span`
+  font-size: 0.875rem;
+`;
+
+const SidebarFooter = styled.div`
+  padding: 1rem 1.5rem;
+  border-top: 1px solid ${props => props.theme.colors.border};
+`;
+
+const UserSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.isDark ? '#334155' : '#f8fafc'};
+  border-radius: 0.5rem;
+`;
+
+const UserAvatar = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+`;
+
+const UserInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const UserName = styled.p`
+  color: ${props => props.theme.colors.text};
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 0 0 0.25rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const UserRole = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.75rem;
+  margin: 0;
+  text-transform: capitalize;
+`;
+
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { isDark } = useTheme();
 
   const menuItems = [
-    { name: 'Dashboard', icon: Home, path: '/dashboard', roles: ['student', 'club_head', 'canteen_vendor', 'hostel_admin', 'super_admin'] },
-    { name: 'Clubs', icon: Users, path: '/clubs', roles: ['student', 'club_head', 'super_admin'] },
-    { name: 'Hostel', icon: Building, path: '/hostel', roles: ['student', 'hostel_admin', 'super_admin'] },
-    { name: 'Canteen', icon: UtensilsCrossed, path: '/canteen', roles: ['student', 'canteen_vendor', 'super_admin'] },
-    { name: 'Marketplace', icon: ShoppingBag, path: '/marketplace', roles: ['student', 'super_admin'] },
-    { name: 'Club Management', icon: Crown, path: '/club-management', roles: ['club_head', 'super_admin'] },
-    { name: 'Vendor Portal', icon: Truck, path: '/vendor', roles: ['canteen_vendor', 'super_admin'] },
-    { name: 'Admin Panel', icon: Shield, path: '/admin', roles: ['hostel_admin', 'super_admin'] },
-    { name: 'Settings', icon: Settings, path: '/settings', roles: ['student', 'club_head', 'canteen_vendor', 'hostel_admin', 'super_admin'] },
+    { name: 'Dashboard', path: '/dashboard', icon: '📊' },
+    { name: 'Clubs', path: '/clubs', icon: '👥' },
+    { name: 'Canteen', path: '/canteen', icon: '🍽️' },
+    { name: 'Hostel', path: '/hostel', icon: '🏠' },
+    { name: 'Marketplace', path: '/marketplace', icon: '🛍️' },
+    { name: 'Settings', path: '/settings', icon: '⚙️' },
   ];
 
-  const filteredItems = menuItems.filter(item =>
-    user?.role && item.roles.includes(user.role)
+  return (
+    <>
+      <SidebarContainer isOpen={isOpen}>
+        <SidebarHeader>
+          <SidebarTitle>Dashboard</SidebarTitle>
+          <CloseButton onClick={toggleSidebar}>
+            <X />
+          </CloseButton>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <MenuList>
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <MenuItem key={item.path}>
+                  <MenuLink to={item.path} isActive={isActive}>
+                    <MenuIcon isActive={isActive}>
+                      {item.icon}
+                    </MenuIcon>
+                    <MenuText>{item.name}</MenuText>
+                  </MenuLink>
+                </MenuItem>
+              );
+            })}
+          </MenuList>
+        </SidebarContent>
+
+        <SidebarFooter>
+          <UserSection>
+            <UserAvatar>{user?.full_name?.charAt(0)}</UserAvatar>
+            <UserInfo>
+              <UserName>{user?.full_name}</UserName>
+              <UserRole>{user?.role}</UserRole>
+            </UserInfo>
+          </UserSection>
+        </SidebarFooter>
+      </SidebarContainer>
+    </>
   );
-
-  const handleLinkClick = () => {
-    if (window.innerWidth < 1024) {
-      toggleSidebar();
-    }
-  };
-
-return (
-  <>
-    <aside
-      className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } bg-white border-r border-gray-200 lg:translate-x-0`}
-    >
-      {/* Close button inside sidebar for mobile */}
-      <div className="absolute top-4 right-4 lg:hidden">
-        <button
-          onClick={toggleSidebar}
-          className="p-2 bg-gray-100 rounded-md shadow hover:bg-gray-200 transition-all"
-        >
-          <X className="w-5 h-5 text-gray-700" />
-        </button>
-      </div>
-
-      <div className="pt-20 h-full px-3 pb-4 overflow-y-auto bg-white">
-        <ul className="space-y-2 font-medium">
-          {filteredItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <li key={item.name}>
-                <Link
-                  to={item.path}
-                  onClick={handleLinkClick}
-                  className={`flex items-center p-3 rounded-lg group transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-900 hover:bg-gray-100 hover:shadow-md'
-                  }`}
-                >
-                  <item.icon
-                    className={`w-5 h-5 transition duration-75 ${
-                      isActive
-                        ? 'text-white'
-                        : 'text-gray-500 group-hover:text-gray-900'
-                    }`}
-                  />
-                  <span className="ml-3">{item.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </aside>
-  </>
-);
-}
+};
 
 export default Sidebar;

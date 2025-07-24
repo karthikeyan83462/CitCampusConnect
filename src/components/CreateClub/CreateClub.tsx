@@ -4,10 +4,123 @@ import { PlusCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import type { RootState } from '../../store/store';
+import styled from 'styled-components';
 
 interface CreateClubProps {
   onSuccess?: () => void;
 }
+
+const CreateClubContainer = styled.div`
+  background-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const CreateClubTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  resize: vertical;
+  min-height: 6rem;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: white;
+  appearance: none;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const CreateButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+`;
+
+const ButtonIcon = styled(PlusCircle)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const CreateClub: React.FC<CreateClubProps> = ({ onSuccess }) => {
   const dispatch = useDispatch();
@@ -46,28 +159,25 @@ const CreateClub: React.FC<CreateClubProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 space-y-4">
-      <h2 className="text-2xl font-semibold mb-2">Create a New Club</h2>
+    <CreateClubContainer>
+      <CreateClubTitle>Create a New Club</CreateClubTitle>
 
-      <input
+      <FormInput
         type="text"
         placeholder="Club Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2"
       />
 
-      <textarea
+      <FormTextarea
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2"
       />
 
-      <select
+      <FormSelect
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2"
       >
         <option value="Academic">Academic</option>
         <option value="Sports">Sports</option>
@@ -75,17 +185,16 @@ const CreateClub: React.FC<CreateClubProps> = ({ onSuccess }) => {
         <option value="Technical">Technical</option>
         <option value="Social Service">Social Service</option>
         <option value="Arts">Arts</option>
-      </select>
+      </FormSelect>
 
-      <button
+      <CreateButton
         onClick={handleCreateClub}
         disabled={loading}
-        className="flex items-center justify-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
       >
-        <PlusCircle className="w-5 h-5 mr-2" />
+        <ButtonIcon />
         {loading ? 'Creating...' : 'Create Club'}
-      </button>
-    </div>
+      </CreateButton>
+    </CreateClubContainer>
   );
 };
 

@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import LoginForm from '../components/Auth/LoginForm';
 import SignupForm from '../components/Auth/SignupForm';
+import styled from 'styled-components';
+
+const AuthContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #eff6ff, #faf5ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+`;
+
+const AuthWrapper = styled.div`
+  width: 100%;
+  max-width: 28rem;
+`;
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,15 +23,15 @@ const Auth: React.FC = () => {
   const toggleForm = () => setIsLogin(!isLogin);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <AuthContainer>
+      <AuthWrapper>
         {isLogin ? (
           <LoginForm onToggle={toggleForm} />
         ) : (
           <SignupForm onToggle={toggleForm} />
         )}
-      </div>
-    </div>
+      </AuthWrapper>
+    </AuthContainer>
   );
 };
 

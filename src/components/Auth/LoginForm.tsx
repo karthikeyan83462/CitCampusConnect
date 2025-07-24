@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { signIn } from '../../store/slices/authSlice';
 import type { RootState, AppDispatch } from '../../store/store';
+import styled, { keyframes } from 'styled-components';
 
 interface LoginFormData {
   email: string;
@@ -13,6 +14,176 @@ interface LoginFormData {
 interface LoginFormProps {
   onToggle: () => void;
 }
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const FormContainer = styled.div`
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+`;
+
+const FormHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const FormTitle = styled.h2`
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+`;
+
+const FormSubtitle = styled.p`
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const FormGroup = styled.div``;
+
+const FormLabel = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+`;
+
+const InputContainer = styled.div`
+  position: relative;
+`;
+
+const InputIcon = styled.div`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const ErrorText = styled.p`
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const Spinner = styled.div`
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const ToggleSection = styled.div`
+  margin-top: 1.5rem;
+  text-align: center;
+`;
+
+const ToggleText = styled.p`
+  color: #4b5563;
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  
+  &:hover {
+    color: #2563eb;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0;
+`;
+
+const MailIcon = styled(Mail)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const LockIcon = styled(Lock)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
+const LogInIcon = styled(LogIn)`
+  width: 1.25rem;
+  height: 1.25rem;
+`;
 
 const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,87 +196,74 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Welcome Back
-          </h2>
-          <p className="text-gray-600 mt-2">Sign in to your CampusConnect account</p>
-        </div>
+    <FormContainer>
+      <FormHeader>
+        <FormTitle>Welcome Back</FormTitle>
+        <FormSubtitle>Sign in to your CampusConnect account</FormSubtitle>
+      </FormHeader>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+      {error && (
+        <ErrorMessage>
+          {error}
+        </ErrorMessage>
+      )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="email"
-                {...register('email', { required: 'Email is required' })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your email"
-              />
-            </div>
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-            )}
-          </div>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <FormGroup>
+          <FormLabel>Email Address</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <MailIcon />
+            </InputIcon>
+            <FormInput
+              type="email"
+              {...register('email', { required: 'Email is required' })}
+              placeholder="Enter your email"
+            />
+          </InputContainer>
+          {errors.email && (
+            <ErrorText>{errors.email.message}</ErrorText>
+          )}
+        </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="password"
-                {...register('password', { required: 'Password is required' })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your password"
-              />
-            </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-            )}
-          </div>
+        <FormGroup>
+          <FormLabel>Password</FormLabel>
+          <InputContainer>
+            <InputIcon>
+              <LockIcon />
+            </InputIcon>
+            <FormInput
+              type="password"
+              {...register('password', { required: 'Password is required' })}
+              placeholder="Enter your password"
+            />
+          </InputContainer>
+          {errors.password && (
+            <ErrorText>{errors.password.message}</ErrorText>
+          )}
+        </FormGroup>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" />
-                <span>Sign In</span>
-              </>
-            )}
-          </button>
-        </form>
+        <SubmitButton type="submit" disabled={loading}>
+          {loading ? (
+            <Spinner />
+          ) : (
+            <>
+              <LogInIcon />
+              <span>Sign In</span>
+            </>
+          )}
+        </SubmitButton>
+      </Form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Don't have an account?{' '}
-            <button
-              onClick={onToggle}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Sign up here
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+      <ToggleSection>
+        <ToggleText>
+          Don't have an account?{' '}
+          <ToggleButton onClick={onToggle}>
+            Sign up here
+          </ToggleButton>
+        </ToggleText>
+      </ToggleSection>
+    </FormContainer>
   );
 };
 
