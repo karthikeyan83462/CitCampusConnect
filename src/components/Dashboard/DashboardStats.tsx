@@ -24,8 +24,8 @@ const StatsGrid = styled.div`
   }
 `;
 
-const StatCardContainer = styled.div<{ color: string }>`
-  background: ${props => props.color};
+const StatCardContainer = styled.div<{ $color: string }>`
+  background: ${props => props.$color};
   border-radius: 1rem;
   padding: 1.5rem;
   color: white;
@@ -73,10 +73,10 @@ const StatValue = styled.div`
   }
 `;
 
-const StatChange = styled.div<{ changeType: 'positive' | 'negative' }>`
+const StatChange = styled.div<{ $changeType: 'positive' | 'negative' }>`
   font-size: 0.875rem;
   font-weight: 500;
-  color: ${props => props.changeType === 'positive' ? '#bbf7d0' : '#fecaca'};
+  color: ${props => props.$changeType === 'positive' ? '#bbf7d0' : '#fecaca'};
 `;
 
 const UsersIcon = styled(Users)`
@@ -104,7 +104,7 @@ const ShoppingBagIcon = styled(ShoppingBag)`
 `;
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, change }) => (
-  <StatCardContainer color={color}>
+  <StatCardContainer $color={color}>
     <StatContent>
       <StatHeader>
         <StatTitle>{title}</StatTitle>
@@ -114,7 +114,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, change }
       </StatHeader>
       <StatValue>{value}</StatValue>
       {change && (
-        <StatChange changeType={change.includes('+') ? 'positive' : 'negative'}>
+        <StatChange $changeType={change.includes('+') ? 'positive' : 'negative'}>
           {change} from last month
         </StatChange>
       )}

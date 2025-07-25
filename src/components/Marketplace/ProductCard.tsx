@@ -75,17 +75,17 @@ const WishlistButton = styled.button`
   }
 `;
 
-const WishlistIcon = styled(Heart)<{ isWishlisted: boolean }>`
+const WishlistIcon = styled(Heart)<{ $isWishlisted: boolean }>`
   width: 1.25rem;
   height: 1.25rem;
-  color: ${props => props.isWishlisted ? '#ef4444' : props.theme.colors.textSecondary};
+  color: ${props => props.$isWishlisted ? '#ef4444' : props.theme.colors.textSecondary};
 
-  ${props => props.isWishlisted && `
+  ${props => props.$isWishlisted && `
     fill: currentColor;
   `}
 `;
 
-const ConditionBadge = styled.span<{ color: string }>`
+const ConditionBadge = styled.span<{ $color: string }>`
   position: absolute;
   bottom: 0.75rem;
   left: 0.75rem;
@@ -93,8 +93,8 @@ const ConditionBadge = styled.span<{ color: string }>`
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 9999px;
-  background-color: ${props => props.color.split(' ')[0]};
-  color: ${props => props.color.split(' ')[1]};
+  background-color: ${props => props.$color.split(' ')[0]};
+  color: ${props => props.$color.split(' ')[1]};
 `;
 
 const CardContent = styled.div`
@@ -242,10 +242,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
         
         <WishlistButton onClick={() => onWishlistToggle?.(item.id)}>
-          <WishlistIcon isWishlisted={isWishlisted || false} />
+          <WishlistIcon $isWishlisted={isWishlisted || false} />
         </WishlistButton>
         
-        <ConditionBadge color={getConditionColor(item.condition)}>
+        <ConditionBadge $color={getConditionColor(item.condition)}>
           {item.condition.replace('_', ' ')}
         </ConditionBadge>
       </ImageContainer>
