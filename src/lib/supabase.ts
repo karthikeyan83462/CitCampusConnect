@@ -45,6 +45,105 @@ export const deleteImage = async (filePath: string): Promise<void> => {
   }
 };
 
+// Real-time messaging utilities
+export const subscribeToMessages = (conversationId: string, callback: (message: any) => void) => {
+  return supabase
+    .channel(`messages:${conversationId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      },
+      (payload) => {
+        callback(payload.new);
+      }
+    )
+    .subscribe();
+};
+
+export const subscribeToConversations = (userId: string, callback: (conversation: any) => void) => {
+  return supabase
+    .channel(`conversations:${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'conversations',
+        filter: `buyer_id=eq.${userId} OR seller_id=eq.${userId}`
+      },
+      (payload) => {
+        callback(payload);
+      }
+    )
+    .subscribe();
+};
+
+export const subscribeToUserStatus = (userId: string, callback: (status: any) => void) => {
+  return supabase
+    .channel(`user_status:${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'user_status'
+        // Remove the filter to subscribe to all user status changes
+        // The RLS policies will handle which status updates the user can see
+      },
+      (payload) => {
+        callback(payload);
+      }
+    )
+    .subscribe();
+};
+
+export const updateUserStatus = async (userId: string, status: 'online' | 'offline' | 'away', isTyping?: boolean, typingInConversation?: string) => {
+  try {
+    // Use the database function instead of direct upsert
+    const { error } = await supabase.rpc('update_user_status', {
+      p_user_id: userId,
+      p_status: status,
+      p_is_typing: isTyping || false,
+      p_typing_in_conversation: typingInConversation || null
+    });
+
+    if (error) {
+      console.error('Status update error:', error);
+    }
+  } catch (error) {
+    console.error('Status update error:', error);
+  }
+};
+
+export const markMessageAsRead = async (messageId: string) => {
+  const { error } = await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('id', messageId);
+
+  if (error) {
+    console.error('Mark as read error:', error);
+  }
+};
+
+export const getOnlineUsers = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from('user_status')
+    .select('user_id')
+    .eq('status', 'online');
+
+  if (error) {
+    console.error('Get online users error:', error);
+    return [];
+  }
+
+  return data?.map(row => row.user_id) || [];
+};
+
 // --- Define the types for your DB schema ---
 export type Database = {
   public: {
@@ -191,6 +290,50 @@ export type Database = {
         };
         Insert: Omit<Database['public']['Tables']['marketplace_items']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['marketplace_items']['Insert']>;
+      };
+
+      conversations: {
+        Row: {
+          id: string;
+          item_id: string;
+          item_title: string;
+          buyer_id: string;
+          seller_id: string;
+          created_at: string;
+          updated_at: string;
+          last_message?: string;
+          last_message_time?: string;
+          unread_count: number;
+        };
+        Insert: Omit<Database['public']['Tables']['conversations']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['conversations']['Insert']>;
+      };
+
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          receiver_id: string;
+          content: string;
+          created_at: string;
+          is_read: boolean;
+        };
+        Insert: Omit<Database['public']['Tables']['messages']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['messages']['Insert']>;
+      };
+
+      user_status: {
+        Row: {
+          id: string;
+          user_id: string;
+          status: 'online' | 'offline' | 'away';
+          last_seen: string;
+          is_typing?: boolean;
+          typing_in_conversation?: string;
+        };
+        Insert: Omit<Database['public']['Tables']['user_status']['Row'], 'id'>;
+        Update: Partial<Database['public']['Tables']['user_status']['Insert']>;
       };
     };
   };

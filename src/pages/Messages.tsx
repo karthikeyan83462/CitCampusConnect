@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { MessageSquare, Send, User, Clock, Search, Filter } from 'lucide-react';
 import type { RootState, AppDispatch } from '../store/store';
@@ -9,6 +9,9 @@ import {
   setCurrentConversation,
   markConversationAsRead 
 } from '../store/slices/messagesSlice';
+import { useRealtimeMessaging } from '../hooks/useRealtimeMessaging';
+import TypingIndicator from '../components/Messages/TypingIndicator';
+import OnlineStatusIndicator from '../components/Messages/OnlineStatusIndicator';
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`
@@ -383,6 +386,19 @@ const Messages: React.FC = () => {
   const { conversations, currentConversation, loading, error } = useSelector((state: RootState) => state.messages);
   const [searchTerm, setSearchTerm] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  
+  // Real-time messaging hook
+  const { 
+    isUserOnline, 
+    typingUsers, 
+    handleTypingChange 
+  } = useRealtimeMessaging();
+  
+  // Auto-scroll to bottom when new messages arrive
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Fetch conversations when component mounts
   useEffect(() => {
@@ -390,6 +406,11 @@ const Messages: React.FC = () => {
       dispatch(fetchConversations(user.id));
     }
   }, [dispatch, user]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentConversation?.messages]);
 
   const filteredConversations = conversations.filter(conv => {
     const otherUserId = conv.buyer_id === user?.id ? conv.seller_id : conv.buyer_id;
@@ -402,6 +423,9 @@ const Messages: React.FC = () => {
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !currentConversation || !user) return;
+
+    // Stop typing indicator
+    handleTypingChange(currentConversation.id, false);
 
     dispatch(sendMessage({
       conversationId: currentConversation.id,
@@ -417,6 +441,16 @@ const Messages: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+    
+    // Update typing indicator
+    if (currentConversation) {
+      handleTypingChange(currentConversation.id, value.length > 0);
     }
   };
 
@@ -516,10 +550,15 @@ const Messages: React.FC = () => {
                       <ConversationAvatar>
                         {otherUserName.slice(0, 2).toUpperCase()}
                       </ConversationAvatar>
-                      <ConversationInfo>
-                        <ConversationName>{otherUserName}</ConversationName>
-                        <ConversationTime>{formatTime(conversation.last_message_time || conversation.updated_at)}</ConversationTime>
-                      </ConversationInfo>
+                                        <ConversationInfo>
+                    <ConversationName>{otherUserName}</ConversationName>
+                    <ConversationTime>{formatTime(conversation.last_message_time || conversation.updated_at)}</ConversationTime>
+                    <OnlineStatusIndicator 
+                      isOnline={isUserOnline(otherUserId)} 
+                      showText={false} 
+                      size="small" 
+                    />
+                  </ConversationInfo>
                     </ConversationHeader>
                     <ConversationPreview>{conversation.item_title}</ConversationPreview>
                   </ConversationItem>
@@ -537,7 +576,14 @@ const Messages: React.FC = () => {
               </ChatAvatar>
               <ChatInfo>
                 <ChatName>{(currentConversation.buyer_id === user?.id ? currentConversation.seller_id : currentConversation.buyer_id)?.slice(0, 8)}</ChatName>
-                <ChatStatus>About: {currentConversation.item_title}</ChatStatus>
+                <ChatStatus>
+                  About: {currentConversation.item_title}
+                  <OnlineStatusIndicator 
+                    isOnline={isUserOnline(currentConversation.buyer_id === user?.id ? currentConversation.seller_id : currentConversation.buyer_id)} 
+                    showText={true} 
+                    size="small" 
+                  />
+                </ChatStatus>
               </ChatInfo>
             </ChatHeader>
 
@@ -553,6 +599,17 @@ const Messages: React.FC = () => {
                   </MessageTime>
                 </MessageBubble>
               ))}
+              
+              {/* Typing indicators */}
+              {typingUsers.map((typingUser, index) => (
+                <TypingIndicator 
+                  key={`typing-${index}`} 
+                  userName={(currentConversation.buyer_id === user?.id ? currentConversation.seller_id : currentConversation.buyer_id)?.slice(0, 8) || 'Someone'} 
+                />
+              ))}
+              
+              {/* Auto-scroll anchor */}
+              <div ref={messagesEndRef} />
             </ChatMessages>
 
             <ChatInput>
@@ -560,7 +617,7 @@ const Messages: React.FC = () => {
                 type="text"
                 placeholder="Type a message..."
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={handleMessageChange}
                 onKeyPress={handleKeyPress}
               />
               <SendButton onClick={handleSendMessage} disabled={!newMessage.trim()}>

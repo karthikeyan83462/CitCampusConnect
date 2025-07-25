@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ShoppingCart, Search, Filter, X, UtensilsCrossed } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingCart, Search, Filter, X, UtensilsCrossed, Star, Clock, TrendingUp, Zap, Heart, Eye } from 'lucide-react';
 import { fetchItems, addToCart, placeOrder, clearCart } from '../store/slices/canteenSlice';
 import FoodItemCard from '../components/Canteen/FoodItemCard';
+import EnhancedFoodItemCard from '../components/Canteen/EnhancedFoodItemCard';
 import toast from 'react-hot-toast';
 import type { RootState, AppDispatch } from '../store/store';
 import styled, { keyframes } from 'styled-components';
@@ -83,32 +85,175 @@ const CartButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: ${props => props.theme.colors.primary};
   color: white;
-  padding: 0.875rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 0.875rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   align-self: flex-start;
-  
-  @media (min-width: 768px) {
-    align-self: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  @media (min-width: 768px) { align-self: center; }
+  &:hover, &:focus {
+    background: ${props => props.theme.colors.primary};
+    outline: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
   }
+`;
+
+const QuickActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+  }
+`;
+
+const QuickActionButton = styled.button<{ $isActive?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.border};
+  background-color: ${props => props.$isActive ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.$isActive ? 'white' : props.theme.colors.text};
+  cursor: pointer;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: linear-gradient(135deg, #ea580c, #dc2626);
+    background-color: ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.background};
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+  }
+`;
+
+const StatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+`;
+
+const StatCard = styled.div`
+  background: linear-gradient(135deg, ${props => props.theme.colors.surface}, ${props => props.theme.colors.background});
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const StatNumber = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.primary};
+  margin-bottom: 0.25rem;
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.75rem;
+  color: ${props => props.theme.colors.textSecondary};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const CategoryTabs = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  
+  &::-webkit-scrollbar {
+    height: 4px;
   }
   
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.colors.background};
+    border-radius: 2px;
   }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.colors.border};
+    border-radius: 2px;
+  }
+`;
+
+const CategoryTab = styled.button<{ $isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.border};
+  background-color: ${props => props.$isActive ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.$isActive ? 'white' : props.theme.colors.text};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background-color: ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.background};
+    transform: translateY(-1px);
+  }
+`;
+
+const ItemsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 1rem;
+  color: ${props => props.theme.colors.textSecondary};
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text};
+  margin-bottom: 1rem;
+`;
+
+const EmptyDescription = styled.p`
+  font-size: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.5;
 `;
 
 const CartIcon = styled(ShoppingCart)`
@@ -116,21 +261,21 @@ const CartIcon = styled(ShoppingCart)`
   height: 1.25rem;
 `;
 
-const CartBadge = styled.div`
-  position: absolute;
-  top: -0.5rem;
-  right: -0.5rem;
-  background-color: ${props => props.theme.colors.surface};
-  color: #f59e0b;
-  border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
+const CartBadge = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border: 1px solid ${props => props.theme.colors.border};
+  min-width: 1.5rem;
+  height: 1.5rem;
+  background: ${props => props.theme.colors.primary};
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: 1.5rem;
+  margin-left: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  border: 2px solid ${props => props.theme.colors.surface};
+  z-index: 1;
 `;
 
 const FiltersContainer = styled.div`
@@ -251,18 +396,20 @@ const CartModalOverlay = styled.div`
 `;
 
 const CartModalContent = styled.div`
-  background-color: white;
+  background-color: ${props => props.theme.colors.surface};
   border-radius: 1rem;
   max-width: 28rem;
   width: 100%;
   max-height: 80vh;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  color: ${props => props.theme.colors.text};
 `;
 
 const CartModalHeader = styled.div`
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.surface};
 `;
 
 const CartModalTitle = styled.div`
@@ -274,7 +421,7 @@ const CartModalTitle = styled.div`
 const CartTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   margin: 0;
 `;
 
@@ -283,7 +430,7 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   border-radius: 0.5rem;
   border: none;
   background: none;
@@ -291,8 +438,8 @@ const CloseButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: #f1f5f9;
-    color: #334155;
+    background-color: ${props => props.theme.colors.background};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -305,10 +452,11 @@ const CartModalBody = styled.div`
   padding: 1.5rem;
   overflow-y: auto;
   max-height: 24rem;
+  background: ${props => props.theme.colors.surface};
 `;
 
 const EmptyCart = styled.p`
-  color: #64748b;
+  color: ${props => props.theme.colors.textSecondary};
   text-align: center;
   padding: 2rem;
 `;
@@ -318,38 +466,44 @@ const CartItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background-color: #f8fafc;
-  border-radius: 0.5rem;
+  background-color: ${props => props.theme.colors.background};
+  border-radius: 1rem;
   margin-bottom: 1rem;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1.5px solid ${props => props.theme.colors.border};
+  &:last-child { margin-bottom: 0; }
 `;
 
 const CartItemInfo = styled.div``;
 
 const CartItemName = styled.h4`
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: 800;
+  color: ${props => props.theme.colors.text};
   margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
 `;
 
 const CartItemDetails = styled.p`
-  font-size: 0.875rem;
-  color: #64748b;
+  font-size: 0.95rem;
+  color: ${props => props.theme.colors.textSecondary};
   margin: 0;
 `;
 
 const CartItemPrice = styled.div`
   font-weight: 700;
-  color: #1e293b;
+  color: ${props => props.theme.colors.primary};
+  font-size: 1.1rem;
 `;
 
 const CartModalFooter = styled.div`
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border-top: 1px solid ${props => props.theme.colors.border};
+  background-color: ${props => props.theme.colors.background};
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;
 `;
 
 const CartTotal = styled.div`
@@ -362,36 +516,31 @@ const CartTotal = styled.div`
 const TotalLabel = styled.span`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
 `;
 
 const TotalAmount = styled.span`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f59e0b;
+  color: ${props => props.theme.colors.primary};
 `;
 
 const PlaceOrderButton = styled.button`
   width: 100%;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: ${props => props.theme.colors.primary};
   color: white;
   padding: 0.875rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 0.875rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  &:hover {
-    background: linear-gradient(135deg, #ea580c, #dc2626);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
-  }
-  
-  &:focus {
+  margin-top: 0.5rem;
+  &:hover, &:focus {
+    background: ${props => props.theme.colors.primary};
     outline: none;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
 `;
 
@@ -407,11 +556,14 @@ const FilterIcon = styled(Filter)`
 
 const Canteen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { items, cart, loading } = useSelector((state: RootState) => state.canteen);
   const { user } = useSelector((state: RootState) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [showCart, setShowCart] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'popular'>('name');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     dispatch(fetchItems());
@@ -443,18 +595,22 @@ const Canteen: React.FC = () => {
         status: 'pending',
       })).unwrap();
       
-      toast.success('Order placed successfully!');
+      toast.success('Order placed successfully! Check your order status in My Orders.');
       setShowCart(false);
+      // Navigate to order tracking after a short delay
+      setTimeout(() => {
+        navigate('/order-tracking');
+      }, 1500);
     } catch (error) {
       toast.error('Failed to place order');
     }
   };
 
-  const categories = ['Breakfast', 'Lunch', 'Snacks', 'Beverages', 'Desserts'];
+  const categories = ['All', 'Breakfast', 'Lunch', 'Snacks', 'Beverages', 'Desserts'];
   
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -478,9 +634,9 @@ const Canteen: React.FC = () => {
           <HeaderSubtitle>Fresh, delicious meals delivered to your location</HeaderSubtitle>
         </HeaderContent>
         
-        <CartButton onClick={() => setShowCart(true)}>
-          <CartIcon />
-          <span>Cart</span>
+        <CartButton onClick={() => setShowCart(true)} aria-label="Open cart">
+          <ShoppingCart style={{ marginRight: '0.5rem' }} />
+          Cart
           {cartItemsCount > 0 && (
             <CartBadge>{cartItemsCount}</CartBadge>
           )}
@@ -509,9 +665,10 @@ const Canteen: React.FC = () => {
             <FilterSelect
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
+              aria-label="Filter by category"
             >
-              <option value="">All Categories</option>
-              {categories.map(category => (
+              <option value="All">All</option>
+              {Array.from(new Set(items.map(item => item.category))).map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </FilterSelect>
@@ -526,7 +683,7 @@ const Canteen: React.FC = () => {
             key={item.id}
             item={item}
             quantity={cart.find(c => c.item.id === item.id)?.quantity || 0}
-            onQuantityChange={(quantity) => handleQuantityChange(item, quantity)}
+            onQuantityChange={quantity => dispatch(addToCart({ item, quantity: quantity - (cart.find(c => c.item.id === item.id)?.quantity || 0) }))}
           />
         ))}
       </MenuGrid>
@@ -549,7 +706,7 @@ const Canteen: React.FC = () => {
                 <EmptyCart>Your cart is empty</EmptyCart>
               ) : (
                 <div>
-                  {cart.map(cartItem => (
+                  {cart.filter(cartItem => cartItem.quantity > 0).map(cartItem => (
                     <CartItem key={cartItem.item.id}>
                       <CartItemInfo>
                         <CartItemName>{cartItem.item.name}</CartItemName>

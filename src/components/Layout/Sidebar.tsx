@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X, LayoutDashboard, Users, Utensils, Home, ShoppingBag, MessageSquare, Settings } from 'lucide-react';
+import { X, LayoutDashboard, Users, Utensils, Home, ShoppingBag, MessageSquare, Settings, ShoppingCart, AlertTriangle, UserCheck, Cog, Package } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RootState } from '../../store/store';
+import { getNavigationItems, getRoleDisplayName } from '../../utils/rolePermissions';
 import styled from 'styled-components';
 
 interface SidebarProps {
@@ -309,15 +310,24 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { isDark } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
 
-  const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Clubs', path: '/clubs', icon: Users },
-    { name: 'Canteen', path: '/canteen', icon: Utensils },
-    { name: 'Hostel', path: '/hostel', icon: Home },
-    { name: 'Marketplace', path: '/marketplace', icon: ShoppingBag },
-    { name: 'Messages', path: '/messages', icon: MessageSquare },
-    { name: 'Settings', path: '/settings', icon: Settings },
-  ];
+  // Get role-based navigation items
+  const menuItems = user ? getNavigationItems(user.role) : [];
+  
+  // Map icon names to components
+  const iconMap = {
+    LayoutDashboard,
+    Users,
+    Utensils,
+    Home,
+    ShoppingBag,
+    MessageSquare,
+    Settings,
+    ShoppingCart,
+    AlertTriangle,
+    UserCheck,
+    Cog,
+    Package,
+  };
 
   const handleMouseEnter = () => {
     if (window.innerWidth > 768) {
@@ -364,7 +374,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <MenuList>
             {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
-              const IconComponent = item.icon;
+              const IconComponent = iconMap[item.icon as keyof typeof iconMap];
             return (
                 <MenuItem key={item.path}>
                   <MenuLink to={item.path} $isActive={isActive} $isHovered={isHovered}>
@@ -384,7 +394,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <UserAvatar $isHovered={isHovered}>{user?.full_name?.charAt(0)}</UserAvatar>
             <UserInfo $isHovered={isHovered}>
               <UserName>{user?.full_name}</UserName>
-              <UserRole>{user?.role}</UserRole>
+              <UserRole>{user ? getRoleDisplayName(user.role) : ''}</UserRole>
             </UserInfo>
           </UserSection>
         </SidebarFooter>
